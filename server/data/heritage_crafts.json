@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "zardozi",
+    "name": "Zardozi Metallic Embroidery",
+    "origin": "Varanasi, Lucknow & Delhi",
+    "history": "An opulent Persian-origin court embroidery using real gold (Zar) and silver threads, beads, sequins, and metallic wires.",
+    "idealFabrics": ["Raw Silk", "Velvet", "Brocade", "Heavy Chanderi"],
+    "garmentStyles": ["Sherwanis", "Mandarin Kurta Collars", "Bridal Lehengas", "Nehru Jackets"],
+    "care": "Dry clean only. Store wrapped in soft muslin cloth.",
+    "badgeColor": "bg-amber-100 text-amber-800 border-amber-300"
+  },
+  {
+    "slug": "ajrakh",
+    "name": "Ajrakh Mud-Resist Block Print",
+    "origin": "Kutch (Gujarat) & Barmer (Rajasthan)",
+    "history": "A 16-stage resist dyeing tradition using hand-carved wooden blocks and 100% botanical dyes like Indigo, Madder, and Tamarind paste.",
+    "idealFabrics": ["Khadi Cotton", "Mulmul", "Modal Silk", "Linen"],
+    "garmentStyles": ["Resist-Dyed Shirts", "Boho Kurtas", "Dupattas", "Summer Tunics"],
+    "care": "Gentle hand wash in cold water with mild eco-detergent.",
+    "badgeColor": "bg-indigo-100 text-indigo-800 border-indigo-300"
+  },
+  {
+    "slug": "chikankari",
+    "name": "Lucknowi Chikankari",
+    "origin": "Lucknow, Uttar Pradesh",
+    "history": "A 400-year-old delicate white-on-white and pastel needlecraft involving 32 distinct stitches including Bakhiya (shadow work) and Murri (rice knot).",
+    "idealFabrics": ["Georgette", "Fine Mulmul", "Chanderi", "Organza"],
+    "garmentStyles": ["Anarkalis", "Pastel Kurtis", "Embroidered Shirts", "Overlay Shrugs"],
+    "care": "Hand wash or gentle dry clean. Iron on reverse.",
+    "badgeColor": "bg-emerald-100 text-emerald-800 border-emerald-300"
+  },
+  {
+    "slug": "ikat",
+    "name": "Pochampally Double Ikat",
+    "origin": "Pochampally, Telangana",
+    "history": "An intricate geometric weaving technique where both warp and weft yarns are tie-dyed with pinpoint precision before being loaded on the handloom.",
+    "idealFabrics": ["Pochampally Handloom Cotton", "Mulberry Silk"],
+    "garmentStyles": ["Modern Structured Blazers", "Geometric Shirts", "Tunics", "Waistcoats"],
+    "care": "Hand wash in cold water; dry in shade to preserve loom vibrancy.",
+    "badgeColor": "bg-rose-100 text-rose-800 border-rose-300"
+  },
+  {
+    "slug": "kantha",
+    "name": "Shantiniketan Kantha Stitch",
+    "origin": "Bolpur & Murshidabad, West Bengal",
+    "history": "A folk narrative embroidery technique utilizing variations of running stitches to create organic depictions of folklore, birds, and floral vines.",
+    "idealFabrics": ["Tussar Silk", "Handspun Khadi", "Matka Silk"],
+    "garmentStyles": ["Artisan Overcoats", "Quilted Vests", "Jackets", "Kurta Panels"],
+    "care": "Gentle dry clean or soft hand wash.",
+    "badgeColor": "bg-orange-100 text-orange-800 border-orange-300"
+  },
+  {
+    "slug": "dabu",
+    "name": "Bagru Dabu Mud-Resist",
+    "origin": "Bagru, Rajasthan",
+    "history": "An ancient technique involving applying a clay, gum, and sawdust paste onto cloth before dipping into subterranean indigo and kashish dye pits.",
+    "idealFabrics": ["Cambric Cotton", "Kota Doria", "Linen"],
+    "garmentStyles": ["Casual Summer Shirts", "Everyday Tunics", "Kurtas"],
+    "care": "Wash separately for the first two washes in cold water.",
+    "badgeColor": "bg-stone-200 text-stone-800 border-stone-400"
+  }
+]

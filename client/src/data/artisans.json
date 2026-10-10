@@ -1,0 +1,385 @@
+[
+  {
+    "id": "art-001",
+    "name": "Ustad Rahimuddin Ansari",
+    "state": "Uttar Pradesh",
+    "distanceKm": 0,
+    "specialties": [
+      "Mandarin Collar Zari",
+      "Bridal Kurta Borders",
+      "Metallic Threadwork",
+      "Sherwani Embellishments"
+    ],
+    "textiles": [
+      "Raw Silk",
+      "Banarasi Katan Silk",
+      "Georgette",
+      "Velvet",
+      "Tussar Silk"
+    ],
+    "stitchingExp": "28 years of craft experience",
+    "experienceYears": 28,
+    "rating": 4.95,
+    "reviewsCount": 84,
+    "completedOrders": 162,
+    "priceRange": "From ₹3200",
+    "estimatedDays": "10-18 days",
+    "availability": "PROFILE VERIFIED",
+    "location": "Varanasi, Uttar Pradesh",
+    "region": "Varanasi, Uttar Pradesh",
+    "craft": "Zardozi & Banarasi Brocade",
+    "languages": [
+      "Hindi",
+      "Urdu",
+      "English (Basic)"
+    ],
+    "verified": true,
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+    "bio": "4th generation master artisan specializing in pure gold-thread (Zari) metallic hand-embroidery and authentic Banarasi silk brocades. Recipient of National Handloom Merit Award.",
+    "recentWorks": [
+      "Midnight Blue Zardozi Silk Kurta",
+      "Antique Gold Threaded Nehru Waistcoat",
+      "Royal Crimson Brocade Blouse Piece"
+    ],
+    "catalog": [
+      {
+        "id": "cat-101",
+        "title": "Midnight Blue Zardozi Silk Kurta",
+        "craft": "Zardozi Handwork",
+        "fabric": "Varanasi Raw Silk",
+        "price": 4800,
+        "leadTime": "12 days",
+        "imageUrl": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=800",
+        "description": "Exquisite gold metallic floral motifs hand-embroidered on a pure raw silk base."
+      },
+      {
+        "id": "cat-102",
+        "title": "Antique Gold Threaded Nehru Waistcoat",
+        "craft": "Zardozi & Dabka Work",
+        "fabric": "Matka Silk Blend",
+        "price": 3600,
+        "leadTime": "9 days",
+        "imageUrl": "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&q=80&w=800",
+        "description": "Tailored waistcoat with handcrafted French knot dabka embroidery on pocket and collar."
+      },
+      {
+        "id": "cat-103",
+        "title": "Royal Crimson Brocade Blouse Piece",
+        "craft": "Banarasi Kadwa Weave",
+        "fabric": "Katan Pure Silk",
+        "price": 2800,
+        "leadTime": "7 days",
+        "imageUrl": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800",
+        "description": "Traditional paisley kadwa bootis woven seamlessly with real golden lurex threads."
+      }
+    ]
+  },
+  {
+    "id": "art-002",
+    "name": "Khatri Ismail Mohammed",
+    "state": "Gujarat",
+    "distanceKm": 0,
+    "specialties": [
+      "Geometric Resist Printing",
+      "Indigo & Madder Dyeing",
+      "Hand-Dyed Shirts",
+      "Layered Overlay Prints"
+    ],
+    "textiles": [
+      "Organic Khadi Cotton",
+      "Modal Silk",
+      "Chanderi Cotton",
+      "Linen",
+      "Mulmul"
+    ],
+    "stitchingExp": "22 years of craft experience",
+    "experienceYears": 22,
+    "rating": 4.92,
+    "reviewsCount": 112,
+    "completedOrders": 240,
+    "priceRange": "From ₹2200",
+    "estimatedDays": "7-14 days",
+    "availability": "PROFILE VERIFIED",
+    "location": "Dhamadka, Kutch, Gujarat",
+    "region": "Dhamadka, Kutch, Gujarat",
+    "craft": "Ajrakh Hand Block Printing & Natural Dyeing",
+    "languages": [
+      "Gujarati",
+      "Hindi",
+      "Kutchi",
+      "English"
+    ],
+    "verified": true,
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+    "bio": "UNESCO Seal of Excellence recognized natural-dye master. Known for 16-stage resist dyeing using madder roots, indigo, and hand-carved teak wood blocks.",
+    "recentWorks": [
+      "Indigo Starburst Ajrakh Shirt",
+      "Madder & Iron Black Overprint Kurta"
+    ],
+    "catalog": [
+      {
+        "id": "cat-201",
+        "title": "Indigo Starburst Ajrakh Shirt",
+        "craft": "16-Step Mud-Resist Block Print",
+        "fabric": "100% Khadi Cotton",
+        "price": 2600,
+        "leadTime": "8 days",
+        "imageUrl": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800",
+        "description": "Breathable handspun khadi printed with traditional starry geometric motifs in botanical indigo."
+      },
+      {
+        "id": "cat-202",
+        "title": "Madder & Iron Black Overprint Kurta",
+        "craft": "Ajrakh Dual-Tone",
+        "fabric": "Chanderi Silk-Cotton",
+        "price": 3100,
+        "leadTime": "10 days",
+        "imageUrl": "https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?auto=format&fit=crop&q=80&w=800",
+        "description": "Rich earthy crimson tones paired with mineral iron black hand-carved floral trellis."
+      }
+    ]
+  },
+  {
+    "id": "art-003",
+    "name": "Begum Shagufta Parveen",
+    "state": "Uttar Pradesh",
+    "distanceKm": 0,
+    "specialties": [
+      "Bakhiya Shadow Work",
+      "Mukaish Silver Dots",
+      "Delicate Floral Necklines",
+      "Angrakha Cuts"
+    ],
+    "textiles": [
+      "Pure Georgette",
+      "Fine Mulmul Cotton",
+      "Chanderi",
+      "Organza",
+      "Silk Modal"
+    ],
+    "stitchingExp": "19 years of craft experience",
+    "experienceYears": 19,
+    "rating": 4.98,
+    "reviewsCount": 96,
+    "completedOrders": 185,
+    "priceRange": "From ₹2800",
+    "estimatedDays": "12-20 days",
+    "availability": "PROFILE VERIFIED",
+    "location": "Chowk, Lucknow, Uttar Pradesh",
+    "region": "Chowk, Lucknow, Uttar Pradesh",
+    "craft": "Chikankari & Mukaish Hand Embroidery",
+    "languages": [
+      "Hindi",
+      "Urdu",
+      "English"
+    ],
+    "verified": true,
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
+    "bio": "Leader of a 30-woman artisan collective in old Lucknow. Preserving 32 ancient stitches including Shadow Work (Bakhiya), Keel Kangan, and Murri stitches.",
+    "recentWorks": [
+      "Sage Green Shadow-Work Anarkali Kurti",
+      "Pearl White Mukaish Work Shirt"
+    ],
+    "catalog": [
+      {
+        "id": "cat-301",
+        "title": "Sage Green Shadow-Work Anarkali Kurti",
+        "craft": "Lucknowi Chikankari",
+        "fabric": "Fine Georgette with Cotton Lining",
+        "price": 4200,
+        "leadTime": "14 days",
+        "imageUrl": "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?auto=format&fit=crop&q=80&w=800",
+        "description": "Featherlight pastel tunic embellished with intricate floral jal and tiny pearl accents."
+      },
+      {
+        "id": "cat-302",
+        "title": "Pearl White Mukaish Work Shirt",
+        "craft": "Tepchi & Mukaish Badla",
+        "fabric": "Handwoven Mulmul",
+        "price": 3400,
+        "leadTime": "10 days",
+        "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80&w=800",
+        "description": "Minimalist modern cut shirt with delicate hand-flattened silver badla dots across the yoke."
+      }
+    ]
+  },
+  {
+    "id": "art-004",
+    "name": "Balaram Padmashali",
+    "state": "Telangana",
+    "distanceKm": 0,
+    "specialties": [
+      "Double Ikat Chevron",
+      "Structured Blazers",
+      "Modern Geometric Shirts",
+      "Contrast Border Tunics"
+    ],
+    "textiles": [
+      "Pochampally Cotton",
+      "Mulberry Silk",
+      "Mercerized Cotton",
+      "Linen-Silk"
+    ],
+    "stitchingExp": "25 years of craft experience",
+    "experienceYears": 25,
+    "rating": 4.88,
+    "reviewsCount": 65,
+    "completedOrders": 130,
+    "priceRange": "From ₹2400",
+    "estimatedDays": "8-15 days",
+    "availability": "PROFILE VERIFIED",
+    "location": "Pochampally, Telangana",
+    "region": "Pochampally, Telangana",
+    "craft": "Pochampally Ikat & Double-Weave",
+    "languages": [
+      "Telugu",
+      "Hindi",
+      "English"
+    ],
+    "verified": true,
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400",
+    "bio": "Master of Pagdu Bandhu warp-and-weft tie-dye weaving. Creates sharp, geometric diamond patterns woven directly on traditional pit looms.",
+    "recentWorks": [
+      "Monochrome Chevron Ikat Casual Blazer",
+      "Rust & Teal Geometric Collar Shirt"
+    ],
+    "catalog": [
+      {
+        "id": "cat-401",
+        "title": "Monochrome Chevron Ikat Casual Blazer",
+        "craft": "Double Ikat Handloom",
+        "fabric": "Mercerized Pochampally Cotton",
+        "price": 3800,
+        "leadTime": "11 days",
+        "imageUrl": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800",
+        "description": "A sharp contemporary unstructured blazer crafted from precision resist-dyed cotton."
+      },
+      {
+        "id": "cat-402",
+        "title": "Rust & Teal Geometric Collar Shirt",
+        "craft": "Single Ikat Weft Dye",
+        "fabric": "100% Handloom Cotton",
+        "price": 2500,
+        "leadTime": "7 days",
+        "imageUrl": "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&q=80&w=800",
+        "description": "Breathable tailored shirt with striking visual contrasts and mother-of-pearl buttons."
+      }
+    ]
+  },
+  {
+    "id": "art-005",
+    "name": "Manjula Devi Roy",
+    "state": "West Bengal",
+    "distanceKm": 0,
+    "specialties": [
+      "Tree of Life Motifs",
+      "Abstract Running Stitches",
+      "Quilted Jackets",
+      "Artisan Patchwork"
+    ],
+    "textiles": [
+      "Tussar Silk",
+      "Handspun Khadi",
+      "Matka Silk",
+      "Linen",
+      "Cotton Sateen"
+    ],
+    "stitchingExp": "17 years of craft experience",
+    "experienceYears": 17,
+    "rating": 4.9,
+    "reviewsCount": 78,
+    "completedOrders": 145,
+    "priceRange": "From ₹2100",
+    "estimatedDays": "10-16 days",
+    "availability": "PROFILE VERIFIED",
+    "location": "Bolpur, Shantiniketan, West Bengal",
+    "region": "Bolpur, Shantiniketan, West Bengal",
+    "craft": "Kantha Narrative Stitching",
+    "languages": [
+      "Bengali",
+      "Hindi",
+      "English"
+    ],
+    "verified": true,
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
+    "bio": "Reviving rural folk storytelling through running stitch Kantha embroidery on repurposed Tussar and handwoven Bengal cottons.",
+    "recentWorks": [
+      "Forest Green Tussar Kantha Overcoat",
+      "Earthy Mustard Reversible Kantha Vest"
+    ],
+    "catalog": [
+      {
+        "id": "cat-501",
+        "title": "Forest Green Tussar Kantha Overcoat",
+        "craft": "Nakshi Kantha Handwork",
+        "fabric": "Natural Wild Tussar Silk",
+        "price": 4600,
+        "leadTime": "15 days",
+        "imageUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800",
+        "description": "Intricate folk flora and bird motifs hand-stitched with vibrant contrast threads."
+      },
+      {
+        "id": "cat-502",
+        "title": "Earthy Mustard Reversible Kantha Vest",
+        "craft": "Linear Running Stitch",
+        "fabric": "Quilted Handspun Cotton",
+        "price": 2700,
+        "leadTime": "8 days",
+        "imageUrl": "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800",
+        "description": "Double-layered reversible vest with distinct contrasting patterns on either side."
+      }
+    ]
+  },
+  {
+    "id": "art-006",
+    "name": "Devi Lal Chhipa",
+    "state": "Rajasthan",
+    "distanceKm": 0,
+    "specialties": [
+      "Dabu Mud Resist",
+      "Kashish (Grey-Brown) Dye",
+      "Jaipuri Paisley Blocks",
+      "Lightweight Summer Shirts"
+    ],
+    "textiles": [
+      "Cambric Cotton",
+      "Kota Doria",
+      "Chanderi",
+      "Organic Canvas"
+    ],
+    "stitchingExp": "31 years of craft experience",
+    "experienceYears": 31,
+    "rating": 4.93,
+    "reviewsCount": 105,
+    "completedOrders": 210,
+    "priceRange": "From ₹1900",
+    "estimatedDays": "6-12 days",
+    "availability": "PROFILE VERIFIED",
+    "location": "Bagru, Rajasthan",
+    "region": "Bagru, Rajasthan",
+    "craft": "Dabu Mud Resist & Natural Indigo",
+    "languages": [
+      "Rajasthani",
+      "Hindi",
+      "English (Basic)"
+    ],
+    "verified": true,
+    "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400",
+    "bio": "Master block-carver and mud-resist printer hailing from the 7th generation of traditional Chhipa printers in Bagru.",
+    "recentWorks": [
+      "Earthy Grey Dabu Block Summer Shirt"
+    ],
+    "catalog": [
+      {
+        "id": "cat-601",
+        "title": "Earthy Grey Dabu Block Summer Shirt",
+        "craft": "Mud-Resist Dabu Print",
+        "fabric": "Fine Cambric Cotton",
+        "price": 2100,
+        "leadTime": "6 days",
+        "imageUrl": "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&q=80&w=800",
+        "description": "Crafted using natural harda and kashish mineral extracts with hand-carved floral bootas."
+      }
+    ]
+  }
+]

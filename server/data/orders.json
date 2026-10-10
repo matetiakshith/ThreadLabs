@@ -1,0 +1,235 @@
+[
+  {
+    "id": "ORD-7595",
+    "customerId": "cust-1791353853058",
+    "customerName": "Aditi Sengupta",
+    "customerEmail": "aditi@example.com",
+    "customerPhone": "+91 98765 43210",
+    "artisanId": "art-001",
+    "artisanName": "Ustad Rahimuddin Ansari",
+    "artisanCraft": "Zardozi & Banarasi Brocade",
+    "artisanAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+    "garmentType": "Traditional Kurta / Kurti",
+    "fabric": "Pure Raw Silk / Katan Silk",
+    "craftTechnique": "Zardozi & Banarasi Brocade",
+    "primaryColor": "#1b2a4a",
+    "colorName": "Royal Midnight Navy",
+    "measurements": {
+      "chest": "40 in",
+      "shoulder": "18.5 in",
+      "length": "42 in",
+      "sleeveLength": "25 in",
+      "neck": "16 in"
+    },
+    "requirementsSummary": "Custom Traditional Kurta / Kurti tailored in Pure Raw Silk / Katan Silk, embellished with authentic Zardozi & Banarasi Brocade in a Royal Midnight Navy palette.",
+    "inputMethod": "text",
+    "originalPrompt": "",
+    "status": "Dispatched",
+    "currentMilestoneIndex": 4,
+    "price": 4000,
+    "createdAt": "2026-10-07T06:17:33.058Z",
+    "estimatedDelivery": "2026-10-21",
+    "timeline": [
+      {
+        "status": "Submitted",
+        "title": "Design Specs Submitted",
+        "timestamp": "2026-10-07T06:17:33.058Z",
+        "completed": true,
+        "note": "Customer approved AI Tech-Pack specifications and sent to artisan."
+      },
+      {
+        "status": "Accepted",
+        "title": "Artisan Confirmation",
+        "timestamp": "2026-10-07T09:46:39.686Z",
+        "completed": true,
+        "note": "Artisan locked measurements and began raw textile procurement."
+      },
+      {
+        "status": "In_Production",
+        "title": "Weaving / Embroidery in Progress",
+        "timestamp": "2026-10-07T09:46:42.466Z",
+        "completed": true,
+        "note": "Pattern drafted; artisan actively weaving / hand-embroidering on frame."
+      },
+      {
+        "status": "Quality_Check",
+        "title": "Finishing & Quality Verification",
+        "timestamp": "2026-10-07T09:46:45.479Z",
+        "completed": true,
+        "note": "Garment stitched; undergoing master tailor seam inspection and pressing."
+      },
+      {
+        "status": "Dispatched",
+        "title": "Dispatched in Eco-Wrap",
+        "timestamp": "2026-10-07T09:46:46.960Z",
+        "completed": true,
+        "note": "Packaged with artisan seal of authenticity and dispatched via courier."
+      }
+    ],
+    "messages": [
+      {
+        "sender": "system",
+        "senderName": "ThreadLabs Concierge",
+        "time": "Just now",
+        "text": "Your custom request for Ustad Rahimuddin Ansari has been placed. The artisan has been notified on their dashboard."
+      }
+    ]
+  },
+  {
+    "id": "ORD-8491",
+    "customerId": "cust-1",
+    "customerName": "Aarav Sharma",
+    "customerEmail": "aarav.sharma@example.com",
+    "customerPhone": "+91 98112 34567",
+    "artisanId": "art-001",
+    "artisanName": "Ustad Rahimuddin Ansari",
+    "artisanCraft": "Zardozi & Banarasi Brocade",
+    "artisanAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+    "garmentType": "Festive Wedding Kurta",
+    "fabric": "Midnight Blue Raw Silk",
+    "craftTechnique": "Zardozi Gold Collar & Placket Embroidery",
+    "primaryColor": "#1b2a4a",
+    "colorName": "Royal Midnight Navy",
+    "measurements": {
+      "chest": "40 inches",
+      "shoulder": "18.5 inches",
+      "length": "42 inches",
+      "sleeveLength": "25 inches",
+      "neck": "16 inches"
+    },
+    "requirementsSummary": "Deep navy blue raw silk kurta featuring delicate antique gold zardozi motifs along the mandarin collar and front button placket. Subtle side-slit accents for a family wedding.",
+    "inputMethod": "voice",
+    "originalPrompt": "I need a royal navy blue raw silk kurta for my brother's sangeet. Looking for fine gold zari hand embroidery on the mandarin collar with matching button plackets.",
+    "status": "In_Production",
+    "currentMilestoneIndex": 2,
+    "price": 4600,
+    "createdAt": "2026-10-04T10:15:00.000Z",
+    "estimatedDelivery": "2026-10-18",
+    "timeline": [
+      {
+        "status": "Submitted",
+        "title": "Design Specs Submitted",
+        "timestamp": "2026-10-04T10:15:00.000Z",
+        "completed": true,
+        "note": "AI parsed multimodal request into standard production tech-pack."
+      },
+      {
+        "status": "Accepted",
+        "title": "Artisan Confirmed Order",
+        "timestamp": "2026-10-04T14:30:00.000Z",
+        "completed": true,
+        "note": "Ustad Rahimuddin Ansari reviewed measurements and locked fabric procurement."
+      },
+      {
+        "status": "In_Production",
+        "title": "Cutting & Zari Embroidery",
+        "timestamp": "2026-10-06T09:00:00.000Z",
+        "completed": true,
+        "note": "Raw silk drafted on frame; gold metallic threadwork actively in progress."
+      },
+      {
+        "status": "Quality_Check",
+        "title": "Master Tailor Finishing & Inspection",
+        "timestamp": null,
+        "completed": false,
+        "note": "Final seam press, lining attachment, and thread density check."
+      },
+      {
+        "status": "Dispatched",
+        "title": "Packed & Handed to Courier",
+        "timestamp": null,
+        "completed": false,
+        "note": "Secured in eco-friendly muslin garment wrap with artisan authenticity certificate."
+      }
+    ],
+    "messages": [
+      {
+        "sender": "artisan",
+        "senderName": "Ustad Rahimuddin Ansari",
+        "time": "Oct 5, 03:20 PM",
+        "text": "Namaste Aarav ji! We have begun framing the raw silk fabric. The antique matte gold zari thread looks stunning against the navy blue."
+      },
+      {
+        "sender": "customer",
+        "senderName": "Aarav Sharma",
+        "time": "Oct 5, 04:10 PM",
+        "text": "Thank you Rahimuddin ji! Very excited to see the final garment."
+      }
+    ]
+  },
+  {
+    "id": "ORD-7920",
+    "customerId": "cust-2",
+    "customerName": "Priya Nair",
+    "customerEmail": "priya.nair@example.com",
+    "customerPhone": "+91 99401 88231",
+    "artisanId": "art-002",
+    "artisanName": "Khatri Ismail Mohammed",
+    "artisanCraft": "Ajrakh Hand Block Printing",
+    "artisanAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+    "garmentType": "Relaxed Camp-Collar Shirt",
+    "fabric": "Handspun Khadi Cotton",
+    "craftTechnique": "Indigo & Madder 16-Stage Mud-Resist",
+    "primaryColor": "#2c3e6b",
+    "colorName": "Natural Indigo & Crimson",
+    "measurements": {
+      "chest": "38 inches",
+      "shoulder": "17.5 inches",
+      "length": "28 inches",
+      "sleeveLength": "10 inches"
+    },
+    "requirementsSummary": "Short-sleeve relaxed camp-collar shirt with starry geometric Ajrakh hand-block motifs in natural indigo with madder red borders and coconut shell buttons.",
+    "inputMethod": "sketch",
+    "originalPrompt": "Hand-sketched camp collar shirt with starburst block prints",
+    "status": "Quality_Check",
+    "currentMilestoneIndex": 3,
+    "price": 2800,
+    "createdAt": "2026-09-29T11:00:00.000Z",
+    "estimatedDelivery": "2026-10-10",
+    "timeline": [
+      {
+        "status": "Submitted",
+        "title": "Design Specs Submitted",
+        "timestamp": "2026-09-29T11:00:00.000Z",
+        "completed": true,
+        "note": "Sketch and measurements converted to Ajrakh printing block plan."
+      },
+      {
+        "status": "Accepted",
+        "title": "Artisan Confirmed Order",
+        "timestamp": "2026-09-29T15:00:00.000Z",
+        "completed": true,
+        "note": "Khatri Ismail prepared natural dye vats."
+      },
+      {
+        "status": "In_Production",
+        "title": "16-Stage Resist Printing & Sun Bleaching",
+        "timestamp": "2026-10-02T08:30:00.000Z",
+        "completed": true,
+        "note": "Dhamadka river washing and indigo dipping completed."
+      },
+      {
+        "status": "Quality_Check",
+        "title": "Tailoring & Buttoning Inspection",
+        "timestamp": "2026-10-06T16:00:00.000Z",
+        "completed": true,
+        "note": "Coconut shell buttons attached; color fastness verified."
+      },
+      {
+        "status": "Dispatched",
+        "title": "Packed & Handed to Courier",
+        "timestamp": null,
+        "completed": false,
+        "note": "Preparing courier slip."
+      }
+    ],
+    "messages": [
+      {
+        "sender": "artisan",
+        "senderName": "Khatri Ismail",
+        "time": "Oct 3, 11:15 AM",
+        "text": "The natural indigo vat achieved rich deep hue today. Printing has gone smoothly."
+      }
+    ]
+  }
+]

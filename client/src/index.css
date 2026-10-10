@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.atelier-experience canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.atelier-grain {
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.atelier-shade {
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(49, 38, 30, 0.12) 100%), linear-gradient(180deg, rgba(245, 238, 229, 0.25), transparent 26%, transparent 74%, rgba(64, 49, 38, 0.1));
+}
+
+@layer base {
+  body {
+    background-color: #F7F4D5;
+    color: #0A3323;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Modern App Glass Cards */
+.app-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid #D6DFC0;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+}
+
+.app-card-interactive {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 2px solid transparent;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.06);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-card-interactive:active {
+  transform: scale(0.98);
+}
+
+/* Voice Wave Animation */
+@keyframes soundwave {
+  0%, 100% { height: 8px; }
+  50% { height: 32px; }
+}
+
+.voice-bar {
+  animation: soundwave 1.2s ease-in-out infinite;
+}
+
+/* Big Touchable Elements for Rural / Naive Users */
+.btn-primary-big {
+  @apply w-full py-4 px-6 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-float active:scale-[0.98] transition-all flex items-center justify-center gap-3;
+}
+
+.btn-clay-big {
+  @apply w-full py-4 px-6 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-clay-glow active:scale-[0.98] transition-all flex items-center justify-center gap-3;
+}
+
+/* Custom Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #839958;
+  border-radius: 9999px;
+}
+
+/* Lotus palette shared across customer, artisan, and login interfaces. */
+[data-palette="rose"] {
+  --atelier-canvas: #F7F4D5;
+  --atelier-panel: #F7F4D5;
+  --atelier-raised: #F7F4D5;
+  --atelier-sand: #E2E8CB;
+  --atelier-line: #A8B58A;
+  --atelier-ink: #0A3323;
+  --atelier-muted: #105666;
+  --atelier-rose: #D3968C;
+  background-color: var(--atelier-canvas) !important;
+  color: var(--atelier-ink) !important;
+}
+
+[data-palette="rose"] [class*="bg-[#090d16]"],
+[data-palette="rose"] [class*="bg-slate-900"] {
+  background-color: var(--atelier-panel) !important;
+}
+
+[data-palette="rose"] [class*="bg-slate-950"] {
+  background-color: var(--atelier-raised) !important;
+}
+
+[data-palette="rose"] [class*="bg-slate-800"],
+[data-palette="rose"] [class*="bg-slate-700"] {
+  background-color: var(--atelier-sand) !important;
+}
+
+[data-palette="rose"] [class*="bg-white/10"],
+[data-palette="rose"] [class*="bg-white/20"] {
+  background-color: rgb(122 92 73 / 9%) !important;
+}
+
+[data-palette="rose"] [class*="text-white"],
+[data-palette="rose"] [class*="text-slate-100"],
+[data-palette="rose"] [class*="text-slate-200"],
+[data-palette="rose"] [class*="text-slate-300"] {
+  color: var(--atelier-ink) !important;
+}
+
+[data-palette="rose"] [class*="text-slate-400"],
+[data-palette="rose"] [class*="text-slate-500"],
+[data-palette="rose"] [class*="text-slate-600"] {
+  color: var(--atelier-muted) !important;
+}
+
+[data-palette="rose"] [class*="text-slate-950"] {
+  color: #F7F4D5 !important;
+}
+
+[data-palette="rose"] [class*="text-amber-"] {
+  color: #8E5B55 !important;
+}
+
+[data-palette="rose"] [class*="text-cyan-"] {
+  color: #105666 !important;
+}
+
+[data-palette="rose"] [class*="text-emerald-"] {
+  color: #0A3323 !important;
+}
+
+[data-palette="rose"] [class*="bg-amber-"],
+[data-palette="rose"] [class*="from-amber-"],
+[data-palette="rose"] [class*="to-amber-"] {
+  background-color: var(--atelier-rose) !important;
+  background-image: none !important;
+}
+
+[data-palette="rose"] [class*="bg-emerald-500/5"] {
+  background-color: rgb(124 137 111 / 10%) !important;
+}
+
+[data-palette="rose"] [class*="bg-amber-500/5"] {
+  background-color: rgb(180 123 126 / 9%) !important;
+}
+
+[data-palette="rose"] [class*="bg-cyan-500/5"] {
+  background-color: rgb(105 127 122 / 9%) !important;
+}
+
+[data-palette="rose"] [class*="bg-emerald-"] {
+  background-color: #839958 !important;
+}
+
+[data-palette="rose"] [class*="bg-cyan-"] {
+  background-color: #105666 !important;
+}
+
+[data-palette="rose"] [class*="bg-amber-400/"] {
+  background-color: #EAD6C8 !important;
+}
+
+[data-palette="rose"] [class*="bg-emerald-500/20"] {
+  background-color: #E2E8CB !important;
+}
+
+[data-palette="rose"] [class*="border-amber-400/30"] {
+  border-color: #D3968C !important;
+}
+
+[data-palette="rose"] [class*="bg-gradient-to-r"] {
+  background-image: linear-gradient(100deg, #D3968C, #105666) !important;
+}
+
+[data-palette="rose"] [class*="border-white/"],
+[data-palette="rose"] [class*="border-slate-"],
+[data-palette="rose"] [class*="border-amber-"],
+[data-palette="rose"] [class*="border-emerald-"],
+[data-palette="rose"] [class*="border-cyan-"] {
+  border-color: var(--atelier-line) !important;
+}
+
+[data-palette="rose"] [class*="placeholder-slate-"]::placeholder {
+  color: #527467 !important;
+  opacity: 1;
+}
+
+[data-flow-palette="rose"] {
+  background-color: #F7F4D5;
+  color: #0A3323;
+  --tw-selection-bg: #D3968C;
+}
+
+[data-flow-palette="rose"]::selection {
+  background-color: #D3968C;
+  color: #fffaf4;
+}
+
+.rose-flow-nav {
+  color: #0A3323;
+}
+
+.rose-flow-nav nav {
+  background: rgb(247 244 213 / 94%) !important;
+  border-color: #A8B58A !important;
+  box-shadow: 0 18px 46px rgb(67 55 47 / 13%) !important;
+}
+
+.rose-flow-nav nav [class*="text-white"] {
+  color: #0A3323 !important;
+}
+
+.rose-flow-nav nav [class*="text-slate-400"] {
+  color: #105666 !important;
+}
+
+.rose-flow-nav nav [class*="bg-amber-400"] {
+  background: #D3968C !important;
+}
+
+.rose-flow-nav nav button:has([class*="bg-amber-400"]) {
+  color: #fffaf4 !important;
+}
+
+.rose-flow-nav nav button:has([class*="bg-amber-400"]) svg {
+  color: #fffaf4 !important;
+}
+
+.rose-flow-nav .text-amber-400 {
+  color: #8E5B55 !important;
+}
+
+.rose-flow-nav > div > button span.text-white {
+  color: #0A3323 !important;
+}
+
+.rose-flow-nav > div > button span.text-slate-400 {
+  color: #105666 !important;
+}
+
+.rose-flow-nav > div > div > button:not(nav button) {
+  background-color: #F7F4D5 !important;
+  border-color: #A8B58A !important;
+  color: #0A3323 !important;
+}
+
+.rose-flow-toast {
+  background-color: #F7F4D5 !important;
+  border-color: #A8B58A !important;
+  color: #0A3323 !important;
+}
+
+.rose-flow-toast > span:first-child {
+  background-color: #D3968C !important;
+}
+[data-palette="rose"] .login-hero,
+[data-palette="rose"] .login-hero * {
+  color: #F7F4D5 !important;
+}
+
+[data-palette="rose"] .login-hero p {
+  text-shadow: 0 1px 10px rgb(10 51 35 / 65%);
+}
