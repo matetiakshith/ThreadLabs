@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Camera, Palette, MessageSquare, Sparkles, ArrowRight, CheckCircle2, RefreshCw, Wand2, Sliders, Scissors, ChevronRight, Rotate3d, Layers } from 'lucide-react';
+import { Mic, MicOff, Camera, Palette, MessageSquare, Sparkles, ArrowRight, CheckCircle2, RefreshCw, Wand2, Sliders, Scissors, ChevronRight, Rotate3d, Layers, Download } from 'lucide-react';
 import SketchPad from './SketchPad';
 import ThreadHeroCanvas from '../Three/ThreadHeroCanvas';
 import Garment3DViewer from '../Three/Garment3DViewer';
+import { generateImagePreview } from '../../services/api';
 
 export default function ModernStepStudio({ onGenerateTechPack, isGenerating, generatedTechPack, onFindArtisans, onEditInput }) {
   const [selectedGarment, setSelectedGarment] = useState('Festive Kurta');
@@ -13,6 +14,8 @@ export default function ModernStepStudio({ onGenerateTechPack, isGenerating, gen
   const [isRecording, setIsRecording] = useState(false);
   const [textPrompt, setTextPrompt] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
+  const [realismPreview, setRealismPreview] = useState(null);
+  const [isPreviewGenerating, setIsPreviewGenerating] = useState(false);
   const [sketchData, setSketchData] = useState(null);
 
   // Simple Size Selector
@@ -94,6 +97,44 @@ export default function ModernStepStudio({ onGenerateTechPack, isGenerating, gen
       sketchDataUrl: sketchData ? sketchData.dataUrl : null,
       imageTags: imagePreview ? ['Visual Reference', selectedGarment] : []
     });
+  };
+
+  const handleGenerateRealismPreview = async () => {
+    const combinedPrompt = voiceText || textPrompt || `${selectedGarment} with traditional Indian heritage craft`;
+
+    if (!combinedPrompt.trim()) {
+      return;
+    }
+
+    setIsPreviewGenerating(true);
+
+    try {
+      const response = await generateImagePreview({
+        prompt: combinedPrompt,
+        imageDataUrl: imagePreview,
+        strength: 0.7,
+      });
+
+      if (response?.imageDataUrl) {
+        setRealismPreview(response.imageDataUrl);
+      }
+    } catch (error) {
+      console.error('Realism preview failed:', error);
+      window.alert(error.message || 'Unable to generate the realism preview right now.');
+    } finally {
+      setIsPreviewGenerating(false);
+    }
+  };
+
+  const handleDownloadRealismPreview = () => {
+    if (!realismPreview) return;
+
+    const link = document.createElement('a');
+    link.href = realismPreview;
+    link.download = `threadlabs-realism-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -267,12 +308,38 @@ export default function ModernStepStudio({ onGenerateTechPack, isGenerating, gen
               <div className="space-y-3">
                 <img src={imagePreview} alt="Preview" className="max-h-56 mx-auto rounded-2xl shadow-md" />
                 <p className="text-xs font-bold text-emerald-600">✓ Photo attached! Our AI will extract fabric & embroidery details.</p>
+                <button
+                  type="button"
+                  onClick={handleGenerateRealismPreview}
+                  disabled={isPreviewGenerating}
+                  className="mx-auto inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md transition hover:brightness-110 disabled:opacity-60"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {isPreviewGenerating ? 'Generating realism preview...' : 'Generate realism preview'}
+                </button>
               </div>
             ) : (
               <div className="space-y-2">
                 <Camera className="w-10 h-10 text-slate-400 mx-auto" />
                 <p className="text-sm font-bold text-slate-800">Upload a Photo of your Desired Outfit / Pattern</p>
                 <p className="text-xs text-slate-400">Tap here to choose from your phone or gallery</p>
+              </div>
+            )}
+
+            {realismPreview && (
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-600">Realism preview</p>
+                  <button
+                    type="button"
+                    onClick={handleDownloadRealismPreview}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700 transition hover:border-violet-300 hover:bg-violet-100"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download
+                  </button>
+                </div>
+                <img src={realismPreview} alt="Realism preview" className="max-h-72 mx-auto rounded-2xl border border-violet-200 shadow-lg" />
               </div>
             )}
           </div>

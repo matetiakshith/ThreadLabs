@@ -923,16 +923,17 @@ export default function ShoppingMall3D({ onEnter }) {
     };
     window.addEventListener('resize', resize);
 
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     const animate = () => {
       animationId = requestAnimationFrame(animate);
       const dt = Math.min(clock.getDelta(), 0.05);
       if (state.dragging) {
         // Drag directly scrubs the same continuous route.
       } else if (state.clickTarget !== null) {
-        state.progress = THREE.MathUtils.damp(state.progress, state.clickTarget, 4.4, dt);
+        state.progress = motionPreference.matches ? state.clickTarget : THREE.MathUtils.damp(state.progress, state.clickTarget, 4.4, dt);
         if (Math.abs(state.clickTarget - state.progress) < 0.0015) state.clickTarget = null;
       } else if (state.scrollTarget !== null) {
-        state.progress = THREE.MathUtils.damp(state.progress, state.scrollTarget, 4.4, dt);
+        state.progress = motionPreference.matches ? state.scrollTarget : THREE.MathUtils.damp(state.progress, state.scrollTarget, 4.4, dt);
         if (Math.abs(state.scrollTarget - state.progress) < 0.0015) state.scrollTarget = null;
       } else if (state.playing) {
         state.progress = Math.min(1, state.progress + dt / 78);
@@ -951,10 +952,11 @@ export default function ShoppingMall3D({ onEnter }) {
         cameraPoint.lerp(new THREE.Vector3(0, 1.62, -32.6), doorAim);
         lookPoint.lerp(new THREE.Vector3(0, 1.9, -38.36), doorAim);
       }
-      const parallax = new THREE.Vector3(state.pointer.x * 0.07, -state.pointer.y * 0.045, 0);
-      camera.position.lerp(cameraPoint.clone().add(parallax), 1 - Math.exp(-dt * 4.2));
+      const parallax = motionPreference.matches ? new THREE.Vector3() : new THREE.Vector3(state.pointer.x * 0.07, -state.pointer.y * 0.045, 0);
+      if (motionPreference.matches) camera.position.copy(cameraPoint);
+      else camera.position.lerp(cameraPoint.clone().add(parallax), 1 - Math.exp(-dt * 4.2));
       camera.lookAt(lookPoint.clone().add(parallax));
-      updatePetals(petals, camera, dt, clock.elapsedTime);
+      if (!motionPreference.matches) updatePetals(petals, camera, dt, clock.elapsedTime);
       photoMeshes.forEach((photo, index) => {
         const desired = state.hoveredIndex === index ? 1.025 : 1;
         photo.scale.lerp(new THREE.Vector3(desired, desired, 1), 1 - Math.exp(-dt * 4));

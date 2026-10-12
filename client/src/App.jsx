@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
+import React, { useEffect, useRef, useState } from 'react';
+import { ThemeProvider } from './context/ThemeContext';
+import { MotionConfig } from 'framer-motion';
 import ThreadTabsNav from './components/Navigation/ThreadTabsNav';
-import ShoppingMall3D from './components/Mall/ShoppingMall3D';
+import ThreadLabsLanding from './components/ThreadLabsLanding';
 import CustomerNeeds from './components/Needs/CustomerNeeds';
 import ArtisanMatchingMap from './components/Artisans/ArtisanMatchingMap';
 import CustomerOrderTracker from './components/Orders/CustomerOrderTracker';
 import CustomFashionCursor from './components/Unseen/CustomFashionCursor';
 import RequestInbox from './components/ArtisanPortal/RequestInbox';
 import LoginPage from './components/LoginPage';
+import AtelierMotion from './components/Motion/AtelierMotion.jsx';
+import { createMeasurementDraft, loadMeasurementDraft, measurementDraftKey, serializeMeasurements, validateMeasurements, garmentLengthRequirement } from './components/Measurements/measurements';
 import { demoRequests } from './data/demoRequests';
-import { playClickSound, playLoomSwoosh, playSuccessChime } from './utils/audioEffects';
+import { playClickSound, playLoomSwoosh, setSoundMuted } from './utils/audioEffects';
+import { fetchSession, fetchCommissions, submitCommission, changeCommissionStage, signOut } from './services/api';
 
 /**
  * ThreadLabs — Final Web Application Master Coordinator
@@ -19,7 +23,21 @@ import { playClickSound, playLoomSwoosh, playSuccessChime } from './utils/audioE
  * 3. FIND YOUR ARTISAN (Rapido / Ola Style Proximity Recommendation)
  * 4. ORDER TRACKING (Amazon-Style Live Garment Production Stages)
  */
-export default function App() {
+function Application() {
+  const motionRoot = useRef(null);
+  const [measurementDraft, setMeasurementDraft] = useState(() => { try { return loadMeasurementDraft(sessionStorage); } catch { return createMeasurementDraft(); } });
+  const [draftStorageWarning, setDraftStorageWarning] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    let failed = false;
+    try { sessionStorage.setItem(measurementDraftKey, JSON.stringify({ version: 1, ...measurementDraft })); }
+    catch { failed = true; }
+    queueMicrotask(() => { if (!cancelled) setDraftStorageWarning(failed); });
+    return () => { cancelled = true; };
+  }, [measurementDraft]);
+  const measurementErrors = validateMeasurements(measurementDraft);
+  const hasMeasurementErrors = Object.keys(measurementErrors).length > 0;
+  const measurements = hasMeasurementErrors ? null : serializeMeasurements(measurementDraft);
   const [activeTab, setActiveTab] = useState('mall');
   const [userRole, setUserRole] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -27,15 +45,45 @@ export default function App() {
   // Cross-Step State
   const [customerRequirement, setCustomerRequirement] = useState(null);
   const [requests, setRequests] = useState(() => {
+    const samples = import.meta.env.DEV ? demoRequests : [];
+    if (!import.meta.env.DEV) return [];
     try {
       const saved = JSON.parse(localStorage.getItem('threadlabsRequests') || '[]');
       const savedById = new Map(saved.map((request) => [request.orderId, request]));
-      const demoIds = new Set(demoRequests.map((request) => request.orderId));
-      return [...demoRequests.map((request) => savedById.get(request.orderId) || request), ...saved.filter((request) => !demoIds.has(request.orderId))];
-    } catch { return demoRequests; }
+      const demoIds = new Set(samples.map((request) => request.orderId));
+      return [...samples.map((request) => savedById.get(request.orderId) || request), ...saved.filter((request) => !demoIds.has(request.orderId))];
+    } catch { return samples; }
   });
-  const [activeOrder, setActiveOrder] = useState(() => { try { return JSON.parse(localStorage.getItem('threadlabsActiveOrder') || 'null'); } catch { return null; } });
+  const [activeOrder, setActiveOrder] = useState(() => { if (!import.meta.env.DEV) return null; try { return JSON.parse(localStorage.getItem('threadlabsActiveOrder') || 'null'); } catch { return null; } });
   const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) return;
+    let cancelled = false;
+    fetchSession().then(({user}) => { if (!cancelled) setUserRole(user); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  useEffect(() => {
+    if (import.meta.env.DEV || !userRole?.id) return;
+    const controller = new AbortController();
+    const refresh = () => fetchCommissions({ signal: controller.signal }).then(items => {
+      if (controller.signal.aborted) return;
+      setRequests(items);
+      setActiveOrder(current => items.find(item => item.orderId === current?.orderId) || items[0] || null);
+    }).catch(error => { if (!controller.signal.aborted) setNotification({msg:error.message}); });
+    refresh();
+    const timer = setInterval(refresh, 30000);
+    return () => { controller.abort(); clearInterval(timer); };
+  }, [userRole?.id]);
+
+  const switchWorkspace = async () => {
+    if (!import.meta.env.DEV) {
+      try { await signOut(); } catch (error) { showToast(error.message); return; }
+      setUserRole(null); setRequests([]); setActiveOrder(null); setMeasurementDraft(createMeasurementDraft());
+      setCustomerRequirement(null);
+    }
+    setActiveTab('login');
+  };
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
@@ -44,6 +92,7 @@ export default function App() {
 
   const handleToggleSound = () => {
     setIsMuted(!isMuted);
+    setSoundMuted(!isMuted);
     playClickSound();
   };
 
@@ -52,12 +101,23 @@ export default function App() {
     playLoomSwoosh();
     setCustomerRequirement(structuredReq);
     setActiveTab('matching');
-    showToast('✓ AI Matched Nearby Tailors & Artisans!');
+    showToast(import.meta.env.DEV ? '✓ AI Matched Nearby Tailors & Artisans!' : 'Choose a region to find an artisan for your brief.');
   };
 
   // Step 3 -> Step 4 Handover: From Artisan Selection to Live Order Tracking
-  const handleConfirmOrder = (orderData) => {
-    const request = { ...orderData, status: 'Request Placed', currentStageIndex: 0, createdAt: new Date().toISOString() };
+  const handleConfirmOrder = async (orderData) => {
+    if (hasMeasurementErrors) return;
+    if (!import.meta.env.DEV) {
+      try {
+        const request = await submitCommission({ ...orderData, measurements });
+        setRequests(current => [request, ...current.filter(item => item.orderId !== request.orderId)]);
+        setActiveOrder(request); setActiveTab('orders');
+        showToast(`Request sent to ${request.artisanName}. Track its status here.`);
+      } catch (error) { showToast(error.message, 'error'); }
+      return;
+    }
+    // oxlint-disable-next-line react/purity -- This timestamp is created by the confirmation event, never during render.
+    const request = { ...orderData, measurements, status: 'Request Placed', currentStageIndex: 0, createdAt: new Date().toISOString() };
     const nextRequests = [request, ...requests];
     setRequests(nextRequests);
     localStorage.setItem('threadlabsRequests', JSON.stringify(nextRequests));
@@ -67,7 +127,8 @@ export default function App() {
     showToast(`Request sent to ${orderData.artisanName}. Track its status here.`);
   };
 
-  const acceptRequest = (orderId) => {
+  const acceptRequest = async (orderId) => {
+    if (!import.meta.env.DEV) return updateRequestStage(orderId, 1, 'Artisan Accepted');
     const accepted = requests.find((request) => request.orderId === orderId);
     if (!accepted) return;
     const nextRequests = requests.map((request) => request.orderId === orderId ? { ...request, status: 'Artisan Accepted', currentStageIndex: Math.max(1, request.currentStageIndex || 0) } : request);
@@ -78,7 +139,15 @@ export default function App() {
     localStorage.setItem('threadlabsActiveOrder', JSON.stringify(nextOrder));
   };
 
-  const updateRequestStage = (orderId, stageIndex, status) => {
+  const updateRequestStage = async (orderId, stageIndex, status) => {
+    if (!import.meta.env.DEV) {
+      try {
+        const request = await changeCommissionStage(orderId, { stageIndex: Math.max(0, stageIndex), status });
+        setRequests(current => current.map(item => item.orderId === orderId ? request : item));
+        setActiveOrder(current => current?.orderId === orderId ? request : current);
+      } catch (error) { showToast(error.message, 'error'); }
+      return;
+    }
     const safeStageIndex = Math.max(0, stageIndex);
     const nextRequests = requests.map((request) => request.orderId === orderId ? { ...request, status, currentStageIndex: safeStageIndex } : request);
     setRequests(nextRequests);
@@ -89,7 +158,8 @@ export default function App() {
   };
 
   return (
-    <div data-flow-palette={activeTab !== 'mall' ? 'rose' : undefined} className="min-h-screen bg-[#090d16] text-slate-100 selection:bg-amber-400 selection:text-slate-950 font-sans relative overflow-x-hidden">
+    <MotionConfig reducedMotion="user"><div className="threadlabs-app" ref={motionRoot}>
+      <AtelierMotion rootRef={motionRoot} />
       
       {/* Luxury Spring Cursor */}
       <CustomFashionCursor cursorState="default" />
@@ -103,21 +173,25 @@ export default function App() {
         }}
         isMuted={isMuted}
         onToggleSound={handleToggleSound}
+        onSignOut={!import.meta.env.DEV && userRole?.id ? switchWorkspace : undefined}
       />}
 
       {/* Main Experience Router */}
-      <main className="relative z-10">
+      <main id="main-content" className="relative z-10">
         
         {/* TAB 1: 3D SHOPPING MALL (IMPRESSIVE OPENING RUNWAY TOUR) */}
         {activeTab === 'mall' && (
-          <ShoppingMall3D onEnter={() => setActiveTab('login')} />
+          <ThreadLabsLanding onEnterApp={() => setActiveTab(!import.meta.env.DEV && userRole?.id ? (userRole.role === 'artisan' ? 'artisan' : 'needs') : 'login')} isMuted={isMuted} onToggleSound={handleToggleSound} />
         )}
 
-        {activeTab === 'login' && <LoginPage onBack={()=>setActiveTab('mall')} onLogin={(role, identity, artisanId)=>{setUserRole({role,identity,artisanId}); setActiveTab(role==='customer'?'needs':'artisan')}} />}
+        {activeTab === 'login' && <LoginPage onBack={()=>setActiveTab('mall')} onLogin={(role, identity, artisanId, account)=>{setUserRole(account || {role,identity,artisanId}); if (!import.meta.env.DEV) { setRequests([]); setActiveOrder(null); setCustomerRequirement(null); setMeasurementDraft(createMeasurementDraft()); } setActiveTab(role==='customer'?'needs':'artisan')}} />}
 
         {/* TAB 2: CUSTOMER NEEDS ("WHAT DO YOU NEED?") */}
         {activeTab === 'needs' && (
           <CustomerNeeds
+            measurementDraft={measurementDraft}
+            draftStorageWarning={draftStorageWarning}
+            onMeasurementChange={setMeasurementDraft}
             initialPrompt={customerRequirement?.userPrompt || ''}
             onProceedToArtisanMatching={handleProceedToArtisanMatching}
           />
@@ -126,7 +200,7 @@ export default function App() {
         {/* TAB 3: FIND YOUR ARTISAN (RAPIDO / OLA PROXIMITY MATCHING) */}
         {activeTab === 'matching' && (
           <ArtisanMatchingMap
-            customerRequirement={customerRequirement}
+            customerRequirement={{ ...customerRequirement, measurements, lengthRequirement: garmentLengthRequirement(measurements), hasMeasurementErrors }}
             customerName={userRole?.identity}
             onConfirmOrder={handleConfirmOrder}
             onBackToNeeds={() => setActiveTab('needs')}
@@ -143,18 +217,20 @@ export default function App() {
             }}
           />
         )}
-        {activeTab === 'artisan' && <RequestInbox artisanId={userRole?.artisanId} requests={requests.filter((request)=>!userRole?.artisanId || request.artisanId===userRole.artisanId)} onBack={()=>setActiveTab('login')} onAccept={acceptRequest} onUpdateStage={updateRequestStage} />}
+        {activeTab === 'artisan' && <RequestInbox artisanId={userRole?.artisanId} requests={requests.filter((request)=>!userRole?.artisanId || request.artisanId===userRole.artisanId)} onBack={switchWorkspace} onAccept={acceptRequest} onUpdateStage={updateRequestStage} />}
 
       </main>
 
       {/* Quick Toast Notification */}
       {notification && (
-        <div className={`fixed bottom-6 right-6 z-50 bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-bold flex items-center gap-2 animate-in fade-in border border-white/10 font-mono ${activeTab !== 'mall' ? 'rose-flow-toast' : ''}`}>
-          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+        <div role="status" className="app-toast">
+          <span className="status-dot" />
           <span>{notification.msg}</span>
         </div>
       )}
 
-    </div>
+    </div></MotionConfig>
   );
 }
+
+export default function App(){return <ThemeProvider><Application/></ThemeProvider>;}

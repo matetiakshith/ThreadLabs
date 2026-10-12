@@ -4,9 +4,11 @@
  */
 
 let audioCtx = null;
+let soundMuted = false;
+export function setSoundMuted(value) { soundMuted = value; }
 
 function getAudioContext() {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined' || soundMuted) return null;
   if (!audioCtx) {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (AudioContext) {

@@ -30,7 +30,7 @@ const examples = [
   ['TL-DEMO-097', 'Sana Khan', 'Delivered', 8, 'Rose Gold Celebration Set'],
 ];
 
-export const demoRequests = examples.map(([orderId, customerName, status, currentStageIndex, garmentTitle], index) => ({
+export const demoRequests = import.meta.env.DEV ? examples.map(([orderId, customerName, status, currentStageIndex, garmentTitle], index) => ({
   ...shared,
   isDemo: true,
   orderId,
@@ -40,4 +40,4 @@ export const demoRequests = examples.map(([orderId, customerName, status, curren
   garmentTitle,
   createdAt: new Date(Date.now() - index * 45 * 60 * 1000).toISOString(),
   deliveryStatus: currentStageIndex >= 7 ? (currentStageIndex === 8 ? 'delivered' : 'in_transit') : 'awaiting_pickup',
-}));
+})) : [];

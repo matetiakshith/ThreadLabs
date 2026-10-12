@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useReducedMotion } from 'framer-motion';
 
 /**
  * Luxury Fashion Interaction Cursor
@@ -11,30 +11,21 @@ import { motion } from 'framer-motion';
  * - 'view': Wide editorial circle for 3D garment exploration
  */
 export default function CustomFashionCursor({ cursorState = 'default' }) {
-  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const smoothX = useSpring(x, { damping: 30, stiffness: 260, mass: .4 });
+  const smoothY = useSpring(y, { damping: 30, stiffness: 260, mass: .4 });
   const [isVisible, setIsVisible] = useState(false);
-
+  const reducedMotion = useReducedMotion();
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
-    };
-
-    const handleMouseLeave = () => setIsVisible(false);
-    const handleMouseEnter = () => setIsVisible(true);
-
-    window.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mouseenter', handleMouseEnter);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      document.removeEventListener('mouseenter', handleMouseEnter);
-    };
-  }, [isVisible]);
-
-  if (!isVisible) return null;
+    if (reducedMotion || !window.matchMedia('(pointer: fine)').matches) return;
+    const move = event => { x.set(event.clientX - 14); y.set(event.clientY - 14); setIsVisible(true); };
+    const leave = () => setIsVisible(false);
+    window.addEventListener('pointermove', move, { passive: true });
+    document.addEventListener('mouseleave', leave);
+    return () => { window.removeEventListener('pointermove', move); document.removeEventListener('mouseleave', leave); };
+  }, [x, y, reducedMotion]);
+  if (!isVisible || reducedMotion || cursorState === 'default') return null;
 
   const isGrab = cursorState === 'grab';
   const isHold = cursorState === 'hold';
@@ -42,7 +33,7 @@ export default function CustomFashionCursor({ cursorState = 'default' }) {
   const isView = cursorState === 'view';
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden hidden md:block">
+    <div aria-hidden="true" className="fashion-cursor fixed inset-0 pointer-events-none z-[9999] overflow-hidden hidden md:block">
       {/* Outer Spring Ring */}
       <motion.div
         className={`fixed top-0 left-0 rounded-full border pointer-events-none flex items-center justify-center transition-colors duration-200 ${
@@ -52,11 +43,10 @@ export default function CustomFashionCursor({ cursorState = 'default' }) {
             ? 'border-cyan-400 bg-cyan-400/10'
             : isView
             ? 'border-white/60 bg-white/5'
-            : 'border-white/30 bg-transparent'
+            : 'border-[#53423a]/30 bg-transparent'
         }`}
+        style={{ x: smoothX, y: smoothY }}
         animate={{
-          x: mousePos.x - (isHold ? 16 : isGrab || isDrag ? 24 : isView ? 32 : 14),
-          y: mousePos.y - (isHold ? 16 : isGrab || isDrag ? 24 : isView ? 32 : 14),
           width: isHold ? 32 : isGrab || isDrag ? 48 : isView ? 64 : 28,
           height: isHold ? 32 : isGrab || isDrag ? 48 : isView ? 64 : 28,
           scale: isHold ? 0.9 : 1,
@@ -75,21 +65,6 @@ export default function CustomFashionCursor({ cursorState = 'default' }) {
         )}
       </motion.div>
 
-      {/* Inner Pinpoint Dot */}
-      <motion.div
-        className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full bg-white pointer-events-none shadow-sm"
-        animate={{
-          x: mousePos.x - 3,
-          y: mousePos.y - 3,
-          opacity: isGrab || isHold || isDrag || isView ? 0 : 1,
-        }}
-        transition={{
-          type: 'spring',
-          damping: 40,
-          stiffness: 500,
-          mass: 0.1,
-        }}
-      />
     </div>
   );
 }

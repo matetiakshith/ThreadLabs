@@ -1,3 +1,5 @@
+import ScrollScene from '../Motion/ScrollScene.jsx';
+import MeasurementSummary from '../Measurements/MeasurementSummary';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -8,6 +10,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import DeliveryTrackingMap from './DeliveryTrackingMap';
+import DialogFrame from '../ui/DialogFrame';
 
 /**
  * Tab 4: Customer Order Status & Live Tracking (Amazon Order Tracking Style)
@@ -18,8 +21,9 @@ export default function CustomerOrderTracker({
   activeOrder,
   onExploreMoreMall,
 }) {
+  const [chatOpen, setChatOpen] = useState(false);
   // Default benchmark order if no active order is passed yet
-  const defaultOrder = {
+  const defaultOrder = import.meta.env.DEV ? {
     orderId: 'TL1024',
     garmentTitle: 'Black Oversized T-Shirt + Blue Jeans',
     artisanName: 'Ravi Tailors & Studio',
@@ -34,18 +38,19 @@ export default function CustomerOrderTracker({
     deliveryStatus: 'in_transit',
     currentStageIndex: 7,
     createdAt: 'Oct 08, 2026',
-  };
+  } : null;
 
   const order = activeOrder || defaultOrder;
+  if (!order) return <div className="product-page order-page"><div className="page-container"><h2 className="font-serif text-4xl">Your commissions</h2><p className="muted mt-4">You have no commissions yet. Create a design brief to begin.</p><button className="primary-button mt-6" onClick={onExploreMoreMall}>Explore the atelier</button></div></div>;
 
   const hasDelivery = order.deliveryMode === 'delivery';
   const trackingStages = [
     { name: 'Request Placed', desc: 'Customer requirements submitted with AI tech pack', isCompleted: true },
-    { name: 'Artisan Accepted', desc: 'Ravi Tailors accepted commission into workshop queue', isCompleted: true },
-    { name: 'Measurements Confirmed', desc: 'Drop-shoulder chest 42in & straight inseam 32in verified', isCompleted: true },
-    { name: 'Fabric Ready', desc: '240 GSM organic combed black cotton & raw denim inspected', isCompleted: true },
+    { name: 'Artisan Accepted', desc: `${order.artisanName} adds the commission to the workshop queue`, isCompleted: true },
+    { name: 'Measurements Confirmed', desc: 'Your artisan confirms the measurements and intended fit', isCompleted: true },
+    { name: 'Fabric Ready', desc: 'Materials selected for your design are prepared for cutting', isCompleted: true },
     { name: 'Cutting', desc: 'Pattern pieces chalked and hand-cut on the workbench', isCurrent: true },
-    { name: 'Stitching & Assembly', desc: 'Flat-felled twin needle seams and neck ribbing attached', isPending: true },
+    { name: 'Stitching & Assembly', desc: 'Garment panels are joined, stitched and finished', isPending: true },
     { name: 'Quality & Steam Press', desc: 'Tolerance inspection and high-temperature steam shaping', isPending: true },
     ...(hasDelivery
       ? [
@@ -62,34 +67,34 @@ export default function CustomerOrderTracker({
   const formatRupees = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
   return (
-    <div data-palette="rose" className="min-h-screen bg-[#090d16] text-slate-100 pt-24 pb-20 px-6 sm:px-12 relative overflow-hidden font-sans">
+    <div className="product-page order-page">
       
-      {/* Background Ambience */}
-      <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-emerald-500/5 blur-[140px] rounded-full pointer-events-none" />
 
-      <div className="max-w-4xl mx-auto space-y-10 relative z-10">
+
+      <div className="page-container order-container">
+        {!activeOrder && <p className="demo-note">Sample commission — create a design brief to start your own.</p>}
         
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div className="page-heading order-heading">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] font-mono tracking-[0.25em] text-emerald-400 font-bold uppercase">
-                STEP 4 OF 4 • AMAZON-STYLE LIVE ORDER TRACKING
+              <span className="w-2.5 h-2.5 rounded-full bg-forest " />
+              <span className="text-[11px] font-mono tracking-[0.25em] text-forest font-bold uppercase">
+                04 / FROM OUR HANDS TO YOURS
               </span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black font-display text-white mt-1 uppercase">
-              ORDER #{order.orderId}
+            <h2 className="text-3xl sm:text-4xl font-normal font-display text-ink mt-1">
+              Your commission. <span className="order-id" title={order.orderId}>#{import.meta.env.DEV ? order.orderId : order.orderId.slice(0,8).toUpperCase()}</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              {order.garmentTitle} • Crafted by <span className="text-amber-400 font-bold">{order.artisanName}</span>
+            <p className="text-xs sm:text-sm text-muted mt-1">
+              {order.garmentTitle} • Crafted by <span className="text-rose font-bold">{order.artisanName}</span>
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={onExploreMoreMall}
-              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-mono uppercase tracking-wider text-slate-200 transition-colors"
+              className="px-5 py-2.5 rounded-full bg-sand hover:bg-sand text-xs font-mono uppercase tracking-wider text-ink transition-colors"
             >
               Explore Mall ↺
             </button>
@@ -100,27 +105,27 @@ export default function CustomerOrderTracker({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-6 sm:p-8 backdrop-blur-2xl shadow-2xl space-y-6"
+          className="order-status-sheet bg-surface border border-line p-6 sm:p-8 space-y-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase font-bold">
-                CURRENT PRODUCTION STATUS
+              <span className="text-[10px] font-mono tracking-widest text-forest uppercase font-bold">
+                On the workbench
               </span>
-              <h3 className="text-2xl sm:text-3xl font-extrabold font-display text-white uppercase">
+              <h3 className="text-4xl sm:text-5xl font-normal font-serif text-ink">
                 {currentStageName}
               </h3>
-              <p className="text-xs sm:text-sm text-slate-300">
+              <p className="text-xs sm:text-sm text-ink">
                 {currentStage.desc}
               </p>
             </div>
 
-            <div className="text-left sm:text-right font-mono bg-slate-950/70 p-4 rounded-2xl border border-white/5 shrink-0">
-              <div className="text-xs text-slate-400">ESTIMATED COMPLETION</div>
-              <div className="text-lg font-bold text-amber-400">{order.estimatedCompletion}</div>
-              <div className="text-[11px] text-emerald-400 font-bold">Total: {formatRupees(order.totalCost)}</div>
+            <div className="text-left sm:text-right font-mono bg-paper p-4 rounded-sm border border-line shrink-0">
+              <div className="text-xs text-muted">ESTIMATED COMPLETION</div>
+              <div className="text-lg font-bold text-rose">{order.estimatedCompletion}</div>
+              <div className="text-[11px] text-forest font-bold">Total: {formatRupees(order.totalCost)}</div>
               {order.deliveryMode === 'delivery' && (
-                <div className="mt-1 text-[10px] text-slate-400">
+                <div className="mt-1 text-[10px] text-muted">
                   Tailoring {formatRupees(order.baseCost)} + delivery {formatRupees(order.deliveryFee)}
                 </div>
               )}
@@ -129,13 +134,14 @@ export default function CustomerOrderTracker({
 
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-mono text-slate-400">
+            <div className="flex justify-between text-xs font-mono text-muted">
               <span>Overall Progress</span>
-              <span className="text-emerald-400 font-bold">{progressPercent}%</span>
+              <span className="text-forest font-bold">{progressPercent}%</span>
             </div>
-            <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div className="w-full bg-paper h-3 rounded-full overflow-hidden p-0.5 border border-line">
               <motion.div
-                className="bg-gradient-to-r from-emerald-500 to-amber-400 h-full rounded-full"
+                className="bg-forest h-full rounded-full"
+                initial={false}
                 animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 1.2, ease: 'easeOut' }}
               />
@@ -143,29 +149,31 @@ export default function CustomerOrderTracker({
           </div>
 
           {/* Direct Line to Artisan Tailor */}
-          <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
-              <MapPin className="w-4 h-4 text-amber-400" />
+          <div className="pt-4 border-t border-line flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs font-mono text-ink">
+              <MapPin className="w-4 h-4 text-rose" />
               <span>Workshop: {order.artisanLocation}</span>
             </div>
 
             <div className="flex items-center gap-2">
               <a
-                href={`tel:${order.artisanPhone}`}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-white flex items-center gap-1.5 transition-colors"
+                href={order.artisanPhone ? `tel:${order.artisanPhone}` : undefined}
+                aria-disabled={!order.artisanPhone}
+                className="px-4 py-2 rounded-sm bg-sand hover:bg-sand text-xs font-mono text-ink flex items-center gap-1.5 transition-colors"
               >
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Call Tailor</span>
+                <Phone className="w-3.5 h-3.5 text-forest" />
+                <span>{order.artisanPhone ? 'Call Tailor' : 'Phone unavailable'}</span>
               </a>
               <button
-                onClick={() => alert(`Direct workshop message sent to ${order.artisanName}`)}
-                className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 transition-colors"
+                onClick={() => setChatOpen(true)}
+                className="px-4 py-2 rounded-sm bg-ink hover:bg-ink text-surface font-bold text-xs font-mono flex items-center gap-1.5 transition-colors"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Workshop Chat</span>
               </button>
             </div>
           </div>
+          <MeasurementSummary measurements={order.measurements} />
         </motion.div>
 
         {hasDelivery && (
@@ -173,53 +181,53 @@ export default function CustomerOrderTracker({
         )}
 
         {/* Detailed Timeline Stages Sequence (Amazon Style) */}
-        <div className="bg-slate-900/70 border border-white/10 rounded-3xl p-6 sm:p-10 backdrop-blur-2xl shadow-2xl space-y-6">
-          <h4 className="text-base font-bold font-display text-white uppercase tracking-wider">
-            Live Production Milestones
+        <ScrollScene name="commission-journey" treatment="journey" className="order-timeline bg-surface border border-line p-6 sm:p-10 space-y-6">
+          <h4 className="text-3xl font-normal font-serif text-ink">
+            Every stitch of the journey
           </h4>
 
-          <div className="space-y-6 relative before:absolute before:inset-y-3 before:left-3.5 before:w-0.5 before:bg-slate-800">
+          <div className="space-y-6 relative before:absolute before:inset-y-3 before:left-3.5 before:w-0.5 before:bg-sand">
             {trackingStages.map((stage, idx) => {
-              const isPast = idx < currentStageIndex;
-              const isCurrent = idx === currentStageIndex;
+              const isPast = idx < currentStageIndex || (idx === currentStageIndex && stage.name === 'Delivered');
+              const isCurrent = idx === currentStageIndex && !isPast;
 
               return (
                 <div key={stage.name} className="relative flex items-start gap-4">
                   {/* Status Indicator Icon */}
                   <div className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
                     isPast
-                      ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-md'
+                      ? 'bg-forest border-line text-surface '
                       : isCurrent
-                      ? 'bg-amber-400 border-white text-slate-950 shadow-[0_0_15px_#f59e0b] animate-pulse'
-                      : 'bg-slate-950 border-slate-700 text-slate-600'
+                      ? 'bg-ink border-line text-surface '
+                      : 'bg-paper border-line text-muted'
                   }`}>
                     {isPast ? (
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
                     ) : isCurrent ? (
                       <Scissors className="w-3.5 h-3.5" />
                     ) : (
-                      <div className="w-2 h-2 rounded-full bg-slate-700" />
+                      <div className="w-2 h-2 rounded-full bg-sand" />
                     )}
                   </div>
 
                   {/* Stage Text */}
                   <div className="space-y-0.5 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-sm font-bold font-display uppercase tracking-wide ${
-                        isCurrent ? 'text-amber-400' : isPast ? 'text-white' : 'text-slate-500'
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className={`text-sm font-medium ${
+                        isCurrent ? 'text-rose' : isPast ? 'text-ink' : 'text-muted'
                       }`}>
                         {stage.name}
                       </span>
                       {isPast && (
-                        <span className="text-[10px] font-mono text-emerald-400 font-bold">COMPLETED ✓</span>
+                        <span className="text-[10px] font-mono text-forest font-bold">COMPLETED ✓</span>
                       )}
                       {isCurrent && (
-                        <span className="text-[10px] font-mono text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/30">
+                        <span className="text-[10px] font-mono text-rose font-bold bg-rose-light px-2 py-0.5 rounded-full border border-line">
                           IN PROGRESS ●
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 font-light">
+                    <p className="text-xs text-muted font-light">
                       {stage.desc}
                     </p>
                   </div>
@@ -227,9 +235,10 @@ export default function CustomerOrderTracker({
               );
             })}
           </div>
-        </div>
+        </ScrollScene>
 
       </div>
+      {chatOpen && <DialogFrame label="Workshop chat" onClose={()=>setChatOpen(false)}><div className="bg-surface border border-line p-7 max-w-md w-full"><span className="eyebrow">Workshop connection</span><h3 className="font-serif text-4xl my-3">{order.artisanName}</h3><p className="muted">Workshop chat is a demo in this prototype. No message has been sent. Use the call link on your commission to contact the workshop.</p><button className="primary-button mt-6" onClick={()=>setChatOpen(false)}>Back to your commission</button></div></DialogFrame>}
     </div>
   );
 }

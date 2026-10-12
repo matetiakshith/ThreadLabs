@@ -1,258 +1,137 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useScroll } from 'framer-motion';
 import * as THREE from 'three';
-import { Sparkles, Rotate3d, Wind, Layers, Palette, Eye } from 'lucide-react';
-import { playLoomSwoosh } from '../../utils/audioEffects';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import useReducedMotion from '../Measurements/useReducedMotion.js';
+import { drapeVertex } from './drapeGeometry.js';
+import './cloth-study.css';
 
+const fabrics = {
+  silk: { color: '#e5dbca', roughness: .38, sheen: .85, bump: .018 },
+  linen: { color: '#d8cbb5', roughness: .86, sheen: .18, bump: .045 },
+};
+
+/** Existing cloth study, now mounted in the real studio. It is not an AI mesh. */
 export default function InteractiveCloth3D() {
-  const mountRef = useRef(null);
-  const [activeFabric, setActiveFabric] = useState('captain-silk');
-  const [windActive, setWindActive] = useState(true);
-
-  const fabrics = [
-    { 
-      id: 'captain-silk', 
-      name: 'Captain Habotai Silk (Bleach Shihakusho)', 
-      color: 0xf8fafc, 
-      metalness: 0.25, 
-      roughness: 0.2, 
-      clearcoat: 0.9,
-      accent: 0xd4af37
-    },
-    { 
-      id: 'quincy-wool', 
-      name: 'Quincy Khadi Wool (Imperial Cape)', 
-      color: 0xffffff, 
-      metalness: 0.1, 
-      roughness: 0.8, 
-      clearcoat: 0.1,
-      accent: 0x38bdf8
-    },
-    { 
-      id: 'banarasi-zari', 
-      name: 'Banarasi Gold Zari Brocade', 
-      color: 0xd4af37, 
-      metalness: 0.88, 
-      roughness: 0.18, 
-      clearcoat: 0.7,
-      accent: 0x991b1b
-    },
-    { 
-      id: 'ajrakh-indigo', 
-      name: 'Ajrakh Natural Indigo Modal', 
-      color: 0x1e3a8a, 
-      metalness: 0.15, 
-      roughness: 0.65, 
-      clearcoat: 0.3,
-      accent: 0xf97316
-    },
-  ];
+  const mount = useRef(null);
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: mount, offset: ['start end', 'end start'] });
+  const [fabric, setFabric] = useState('silk');
+  const [breeze, setBreeze] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [staticStudy, setStaticStudy] = useState(false);
+  const controls = useRef({ turn: 0, breeze: true });
+  useEffect(() => { controls.current.breeze = breeze; }, [breeze]);
 
   useEffect(() => {
-    const container = mountRef.current;
-    if (!container) return;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(0, 0, 4.2);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-    scene.add(ambientLight);
-
-    const dirLight1 = new THREE.DirectionalLight(0xffeedd, 2.5);
-    dirLight1.position.set(4, 5, 4);
-    scene.add(dirLight1);
-
-    const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 1.8);
-    dirLight2.position.set(-4, -3, 2);
-    scene.add(dirLight2);
-
-    const currentFabricObj = fabrics.find(f => f.id === activeFabric) || fabrics[0];
-
-    // Draped Fluid Kimono / Cape Cloth Mesh
-    const width = 3.2;
-    const height = 2.4;
-    const segmentsX = 48;
-    const segmentsY = 40;
-
-    const geometry = new THREE.PlaneGeometry(width, height, segmentsX, segmentsY);
-    const pos = geometry.attributes.position;
-
-    // Initial curve drape
-    for (let i = 0; i < pos.count; i++) {
-      const vx = pos.getX(i);
-      const vy = pos.getY(i);
-      // Gentle hanging fold drape
-      const initialFold = Math.sin(vx * 2.5) * 0.25 * (1.2 - vy * 0.3);
-      pos.setZ(i, initialFold);
-    }
-    geometry.computeVertexNormals();
-
-    const material = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(currentFabricObj.color),
-      metalness: currentFabricObj.metalness,
-      roughness: currentFabricObj.roughness,
-      clearcoat: currentFabricObj.clearcoat,
-      clearcoatRoughness: 0.15,
-      side: THREE.DoubleSide,
-    });
-
-    const clothMesh = new THREE.Mesh(geometry, material);
-    scene.add(clothMesh);
-
-    // Gold/Accent Brocade Border Ribbon at the Bottom
-    const borderGeo = new THREE.PlaneGeometry(width, 0.15, segmentsX, 2);
-    const borderMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(currentFabricObj.accent),
-      metalness: 0.9,
-      roughness: 0.15,
-      side: THREE.DoubleSide,
-    });
-    const borderMesh = new THREE.Mesh(borderGeo, borderMat);
-    borderMesh.position.y = -height / 2 + 0.08;
-    clothMesh.add(borderMesh);
-
-    // Mouse Ripple Interaction
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    let isHovering = false;
-    let touchPoint = new THREE.Vector3(0, 0, 0);
-
-    const onPointerMove = (e) => {
-      const rect = container.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObject(clothMesh);
-
-      if (intersects.length > 0) {
-        isHovering = true;
-        touchPoint.copy(intersects[0].point);
-      } else {
-        isHovering = false;
-      }
+    const host = mount.current;
+    if (!host || staticStudy) return;
+    let renderer, geometry, material, weave, environment, pmrem, room, resize, intersection;
+    let frame = 0, visible = true, disposed = false, last = 0;
+    const pointer = { x: 0, y: 0 };
+    const move = event => {
+      const rect = host.getBoundingClientRect();
+      pointer.x = (event.clientX - rect.left) / rect.width * 2 - 1;
+      pointer.y = 1 - (event.clientY - rect.top) / rect.height * 2;
+      host.dataset.pointer = `${pointer.x.toFixed(2)},${pointer.y.toFixed(2)}`;
+      start();
     };
-
-    container.addEventListener('pointermove', onPointerMove);
-
-    // Animation Loop
-    let animId;
-    let startTime = performance.now();
-
-    const animate = () => {
-      animId = requestAnimationFrame(animate);
-      const now = performance.now();
-      const elapsed = (now - startTime) * 0.001;
-
-      const posAttr = geometry.attributes.position;
-
-      for (let i = 0; i < posAttr.count; i++) {
-        const vx = posAttr.getX(i);
-        const vy = posAttr.getY(i);
-
-        // Fluid wave formula simulating wind through silk kimono
-        let zWave = Math.sin(vx * 2.8 + elapsed * 3.2) * 0.16 * (windActive ? 1 : 0.25) +
-                    Math.cos(vy * 3.5 + elapsed * 2.5) * 0.11 * (windActive ? 1 : 0.25);
-
-        // Fluid ripple when mouse hovers/drags
-        if (isHovering) {
-          const dx = vx - touchPoint.x;
-          const dy = vy - touchPoint.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 1.1) {
-            const pull = (1 - dist / 1.1) * 0.45;
-            zWave += Math.sin(dist * 14 - elapsed * 10) * pull;
+    const leave = () => { pointer.x = 0; pointer.y = 0; start(); };
+    const lost = event => { event.preventDefault(); disposed = true; cancelAnimationFrame(frame); setFailed(true); host.dataset.renderState = 'fallback'; };
+    const visibility = () => { if (document.hidden) { cancelAnimationFrame(frame); frame = 0; } else start(); };
+    let render = () => {};
+    function start() { if (!frame && !disposed && visible && !document.hidden) frame = requestAnimationFrame(render); }
+    try {
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, 1, .1, 30);
+      camera.position.set(0, .08, 5.5);
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = .8;
+      renderer.domElement.setAttribute('aria-label', 'Interactive generic draped fabric study');
+      renderer.domElement.addEventListener('webglcontextlost', lost);
+      host.appendChild(renderer.domElement);
+      pmrem = new THREE.PMREMGenerator(renderer);
+      room = new RoomEnvironment();
+      environment = pmrem.fromScene(room, .04);
+      scene.environment = environment.texture;
+      scene.add(new THREE.AmbientLight('#fff5df', .25));
+      const key = new THREE.DirectionalLight('#fff3de', 2); key.position.set(-4, 2, 1); scene.add(key);
+      const fill = new THREE.DirectionalLight('#e8edf3', .45); fill.position.set(3, -1, 2); scene.add(fill);
+      geometry = new THREE.PlaneGeometry(2.65, 2.85, 44, 48);
+      const position = geometry.attributes.position;
+      const original = new Float32Array(position.array);
+      const pixels = new Uint8Array(64 * 64);
+      for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) pixels[y * 64 + x] = ((x % 4 < 2) !== (y % 4 < 2)) ? 180 : 90;
+      weave = new THREE.DataTexture(pixels, 64, 64, THREE.RedFormat);
+      weave.wrapS = weave.wrapT = THREE.RepeatWrapping; weave.repeat.set(18, 18); weave.needsUpdate = true;
+      const optical = fabrics[fabric];
+      material = new THREE.MeshPhysicalMaterial({ color: optical.color, side: THREE.DoubleSide, metalness: 0, roughness: optical.roughness, sheen: optical.sheen, sheenColor: '#eee5d5', sheenRoughness: .65, envMapIntensity: .4, bumpMap: weave, bumpScale: optical.bump });
+      const cloth = new THREE.Mesh(geometry, material); scene.add(cloth);
+      render = now => {
+        frame = 0;
+        if (disposed || !visible || document.hidden) return;
+        // Cap deformation work to 30 fps; no frame loop while out of view.
+        if (now - last >= 32 || reduced) {
+          last = now;
+          const time = reduced || !controls.current.breeze ? 0 : now * .00065;
+          for (let i = 0; i < position.count; i++) {
+            const x = original[i * 3], y = original[i * 3 + 1];
+            const v = drapeVertex(x, y, time, reduced ? 0 : pointer.x, reduced ? 0 : pointer.y);
+            position.setXYZ(i, v.x, v.y, v.z);
           }
+          position.needsUpdate = true; geometry.computeVertexNormals();
+          const progress = scrollYProgress.get();
+          cloth.rotation.y = reduced ? 0 : controls.current.turn + pointer.x * .22 + (progress - .5) * .38;
+          cloth.rotation.z = reduced ? 0 : Math.sin(time) * .022;
+          camera.position.z = reduced ? 5.5 : 5.8 - progress * .45;
+          camera.lookAt(0, 0, 0);
+          renderer.render(scene, camera);
+          host.dataset.renderState = 'ready';
+          host.dataset.camera = camera.position.z.toFixed(3);
+          host.dataset.rotation = cloth.rotation.y.toFixed(3);
+          host.dataset.frame = String(Number(host.dataset.frame || 0) + 1);
         }
-
-        posAttr.setZ(i, zWave);
-      }
-
-      posAttr.needsUpdate = true;
-      geometry.computeVertexNormals();
-
-      // Gentle floating sway
-      clothMesh.rotation.y = Math.sin(elapsed * 0.5) * 0.12;
-      clothMesh.rotation.x = Math.cos(elapsed * 0.4) * 0.08;
-
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    const onResize = () => {
-      if (!container) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    window.addEventListener('resize', onResize);
-
+        if (!reduced) start();
+      };
+      const size = () => {
+        const width = host.clientWidth, height = host.clientHeight;
+        if (!width || !height) return;
+        renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); start();
+      };
+      resize = new ResizeObserver(size); resize.observe(host);
+      intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (!visible) { cancelAnimationFrame(frame); frame = 0; } else start(); });
+      intersection.observe(host);
+      host.addEventListener('pointermove', move); host.addEventListener('pointerleave', leave);
+      document.addEventListener('visibilitychange', visibility);
+      size(); start();
+    } catch {
+      // WebGL is an external system; notify React asynchronously if startup fails.
+      queueMicrotask(() => { if (!disposed) setFailed(true); });
+      host.dataset.renderState = 'fallback';
+    }
     return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', onResize);
-      container.removeEventListener('pointermove', onPointerMove);
-      if (renderer.domElement && container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
+      disposed = true; cancelAnimationFrame(frame); resize?.disconnect(); intersection?.disconnect();
+      host.removeEventListener('pointermove', move); host.removeEventListener('pointerleave', leave);
+      document.removeEventListener('visibilitychange', visibility);
+      renderer?.domElement.removeEventListener('webglcontextlost', lost);
+      geometry?.dispose(); material?.dispose(); weave?.dispose(); environment?.dispose(); room?.dispose(); pmrem?.dispose();
+      renderer?.dispose(); renderer?.forceContextLoss(); renderer?.domElement.remove();
     };
-  }, [activeFabric, windActive]);
+  }, [fabric, reduced, staticStudy, scrollYProgress]);
 
-  return (
-    <div className="relative w-full h-[340px] sm:h-[420px] rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
-      <div ref={mountRef} className="w-full h-full cursor-crosshair" />
-
-      {/* Top Controls Overlay */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 text-white text-xs font-bold pointer-events-auto shadow-lg">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>Real-Time Fluid Fashion Cloth Physics</span>
-        </div>
-
-        <button
-          onClick={() => {
-            setWindActive(!windActive);
-            playLoomSwoosh();
-          }}
-          className={`px-3 py-1 rounded-xl text-xs font-bold border backdrop-blur-md pointer-events-auto transition-all flex items-center gap-1.5 shadow-lg ${
-            windActive ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900/80 text-slate-400 border-white/10'
-          }`}
-        >
-          <Wind className="w-3.5 h-3.5" />
-          <span>Loom Breeze</span>
-        </button>
-      </div>
-
-      {/* Bottom Fabric Switcher */}
-      <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-        <div className="flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 pointer-events-auto shadow-lg">
-          {fabrics.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => {
-                setActiveFabric(f.id);
-                playLoomSwoosh();
-              }}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                activeFabric === f.id ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {f.name.split('(')[0]}
-            </button>
-          ))}
-        </div>
-
-        <div className="text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/5 pointer-events-none">
-          👆 Touch or hover on cloth to generate dynamic fluid waves
-        </div>
-      </div>
+  return <div className="cloth-study">
+    <div className="cloth-study-viewport" ref={mount} data-render-state={failed ? 'fallback' : staticStudy ? 'static' : 'loading'}>
+      {(failed || staticStudy) && <div className="cloth-static" role="img" aria-label="Static fabric folds"><svg viewBox="0 0 300 350"><path d="M55 30 Q150 65 245 30 L230 315 Q180 300 150 330 Q100 300 70 315Z" fill="var(--sand)"/><path d="M95 45 Q125 165 90 315 M140 54 Q180 220 150 330 M190 44 Q155 195 205 314" fill="none" stroke="var(--muted)" strokeWidth="2"/></svg><p>{failed ? 'Interactive 3D is unavailable. Your design brief and images remain available.' : 'A quiet, static fabric study.'}</p></div>}
     </div>
-  );
+    <div className="cloth-controls" aria-label="Fabric study controls">
+      {Object.keys(fabrics).map(key => <button key={key} aria-pressed={fabric === key} onClick={() => setFabric(key)}>{key === 'silk' ? 'Silk' : 'Linen'}</button>)}
+      <button aria-pressed={breeze} onClick={() => setBreeze(value => !value)} disabled={reduced || failed || staticStudy}>{breeze && !reduced ? 'Pause breeze' : 'Play breeze'}</button>
+      <button aria-label="Rotate fabric left" onClick={() => { controls.current.turn -= .3; }} disabled={reduced || failed || staticStudy}>↶</button>
+      <button aria-label="Rotate fabric right" onClick={() => { controls.current.turn += .3; }} disabled={reduced || failed || staticStudy}>↷</button>
+      <button aria-pressed={staticStudy} onClick={() => setStaticStudy(value => !value)}>{staticStudy ? 'Interactive view' : 'Static view'}</button>
+    </div>
+    <p className="cloth-caption">A generic fabric study. Move your pointer or scroll to explore the drape. This is not an exact reconstruction of your AI design or a body-sizing simulation.</p>
+  </div>;
 }

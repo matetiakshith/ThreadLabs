@@ -1,0 +1,30 @@
+.body-measurements { padding-top:24px; border-top:1px solid var(--line); min-width:0; }
+.measurement-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.measurement-heading h3 { font-size:18px; font-weight:400; margin:0; }
+.measurement-heading > span { font-size:10px; }
+.measurement-help { font-size:11px; line-height:1.6; color:var(--muted); margin:8px 0 18px; }
+.measurement-unit { max-width:230px; margin-bottom:20px; }
+.measurement-group { border-top:1px solid var(--line); }
+.measurement-disclosure { display:flex; align-items:center; justify-content:space-between; width:100%; gap:12px; text-align:left; padding:16px 0; font-size:12px; }
+.measurement-disclosure small { color:var(--rose); font-size:10px; }
+.measurement-disclosure svg { transition:transform 220ms var(--ease); flex-shrink:0; }
+.measurement-region { overflow:hidden; }
+.measurement-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 16px; padding:0 0 22px; }
+.measurement-fields .field-label { min-width:0; }
+.body-measurements .field-label input,.body-measurements .field-label select { background:transparent; }
+.measurement-notes { grid-column:1/-1; }
+.measurement-notes textarea { width:100%; display:block; min-height:80px; margin-top:9px; padding:12px 14px; border:1px solid var(--line); background:transparent; font-size:14px; color:var(--ink); resize:vertical; }
+.measurement-error { display:block; font-size:11px; color:var(--rose); line-height:1.6; margin-top:7px; }
+.body-measurements input[aria-invalid=true] { border-color:var(--rose); }
+.measurement-summary { text-align:left; min-width:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:16px 0; margin-top:18px; }
+.measurement-summary summary { cursor:pointer; font-size:13px; line-height:1.6; }
+.measurement-summary summary > span { display:block; font-size:10px; color:var(--muted); padding-left:15px; }
+.measurement-summary-group { margin-top:16px; }
+.measurement-summary-group h4 { font:400 11px 'Outfit',sans-serif; color:var(--muted); margin:0 0 8px; }
+.measurement-summary-group dl { display:grid; gap:8px; margin:0; }
+.measurement-summary-group dl > div { display:flex; justify-content:space-between; align-items:baseline; gap:18px; font-size:12px; }
+.measurement-summary-group dd { margin:0; text-align:right; white-space:nowrap; }
+.measurement-summary-note { font-size:12px; line-height:1.7; overflow-wrap:anywhere; white-space:pre-wrap; margin-top:14px; }
+.measurement-summary > .measurement-help { margin-bottom:0; }
+@media(max-width:380px) { .measurement-fields { grid-template-columns:minmax(0,1fr); } }
+@media(prefers-reduced-motion:reduce) { .measurement-disclosure svg { transition:none; } }

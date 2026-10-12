@@ -64,7 +64,7 @@ npm run dev
 ```
 
 ### Image Generation Preview
-Provider keys belong in `server/.env` (never in the client). Copy `server/.env.example` as a reference, then add `OPENAI_API_KEY` and `GEMINI_API_KEY` to `server/.env`. Restart the backend after changing the keys. In Customer Needs, generate a preview with either provider, compare the boards, and select one before artisan matching. Preview generation uses provider API credits.
+Provider keys belong in `server/.env` (never in the client). Copy `server/.env.example` as a reference, then add `OPENAI_API_KEY`, `GEMINI_API_KEY`, and optionally `HF_TOKEN` for Hugging Face realism previews. The backend supports the Hugging Face realism adapter configured by `HF_IMAGE_MODEL` (default: `houseofboern/realism-nano-banana-qwen-image-2.1-lokr`). Restart the backend after changing the keys. In Customer Needs, generate a preview with either provider, compare the boards, and select one before artisan matching. Preview generation uses provider API credits.
 
 ---
 
@@ -106,3 +106,7 @@ ThreadLabs/
 - **Fair Compensation**: 100% transparent pricing and guaranteed commission advance.
 - **Cultural Preservation**: Highlights GI-tagged crafts and indigenous techniques for the next generation.
 - **Sustainable Fashion**: Eliminates mass overproduction through zero-waste, on-demand bespoke creation.
+
+## Render deployment
+
+See [the Render deployment guide](docs/RENDER_DEPLOYMENT.md) for the free hosting Blueprint, server-managed accounts, exact commands, required secrets, validation results and remaining GitHub connection steps. The requested version has not been pushed or deployed.

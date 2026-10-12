@@ -2,7 +2,24 @@
  * ThreadLabs API Client
  */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+
+async function accountRequest(endpoint, { method = 'GET', body, signal } = {}) {
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    method, credentials: 'include', signal,
+    ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || 'The workspace request failed.');
+  return result;
+}
+export const signIn = body => accountRequest('/auth/login', { method: 'POST', body });
+export const registerCustomer = body => accountRequest('/auth/register', { method: 'POST', body });
+export const signOut = () => accountRequest('/auth/logout', { method: 'POST' });
+export const fetchSession = () => accountRequest('/auth/me');
+export const fetchCommissions = options => accountRequest('/commissions', options);
+export const submitCommission = body => accountRequest('/commissions', { method: 'POST', body });
+export const changeCommissionStage = (id, body) => accountRequest(`/commissions/${encodeURIComponent(id)}/status`, { method: 'PATCH', body });
 
 export async function fetchHealth() {
   try {
@@ -55,6 +72,32 @@ export async function matchArtisansAI(techPack) {
   });
   if (!res.ok) throw new Error('Failed to rank matched artisans');
   return await res.json();
+}
+
+export async function fetchImageCapabilities({ signal } = {}) {
+  const res = await fetch(`${API_BASE}/ai/image-capabilities`, { signal });
+  if (!res.ok) throw new Error('The image service is unavailable. Start the ThreadLabs backend.');
+  return res.json();
+}
+
+export async function generateImagePreview(payload, { signal } = {}) {
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/ai/generate-image`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload), signal,
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    throw new Error('Cannot reach the ThreadLabs image service. Check that the backend is running.');
+  }
+  if (!res.ok) {
+    const result = await res.json().catch(() => ({}));
+    throw new Error(result.error || (res.status === 413 ? 'The reference is too large. Use an image smaller than 4 MB.' : 'Image generation failed. Please try again.'));
+  }
+  const result = await res.json();
+  if (!/^data:image\/(png|jpeg|webp);base64,/.test(result.imageDataUrl || '')) throw new Error('The image service returned no supported garment image.');
+  return result;
 }
 
 export async function fetchOrders(params = {}) {

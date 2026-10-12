@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        paper: 'rgb(var(--paper-rgb) / <alpha-value>)', surface: 'rgb(var(--surface-rgb) / <alpha-value>)', sand: 'rgb(var(--sand-rgb) / <alpha-value>)', ink: 'rgb(var(--ink-rgb) / <alpha-value>)', muted: 'rgb(var(--muted-rgb) / <alpha-value>)', line: 'rgb(var(--line-rgb) / <alpha-value>)', rose: { DEFAULT: 'var(--rose)', light: 'var(--blush)' }, forest: 'rgb(var(--forest-rgb) / <alpha-value>)',
+        heritage: { cream: 'rgb(var(--surface-rgb) / <alpha-value>)', sand: 'rgb(var(--sand-rgb) / <alpha-value>)', silk: 'rgb(var(--line-rgb) / <alpha-value>)', indigo: 'rgb(var(--ink-rgb) / <alpha-value>)', indigoLight: 'var(--muted)', charcoal: 'var(--ink)', muted: 'var(--muted)', terracotta: 'var(--rose)', gold: 'var(--rose)', goldLight: '#f3dfb6' },
         brand: {
           50: '#f0f7ff',
           100: '#e0effe',
@@ -26,8 +28,10 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Outfit', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Outfit', 'system-ui', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       borderRadius: {
         '4xl': '2rem',

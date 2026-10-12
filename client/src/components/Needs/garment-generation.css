@@ -1,0 +1,21 @@
+.studio-preview-switch { display:flex; gap:18px; margin-bottom:12px; border-bottom:1px solid var(--line); }
+.studio-preview-switch button { padding:8px 0; font-size:11px; color:var(--muted); border-bottom:2px solid transparent; }
+.studio-preview-switch button[aria-pressed=true] { color:var(--ink); border-color:var(--rose); }
+.reference-review { display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--line); padding:15px 0; margin-bottom:20px; }
+.reference-review img { width:70px; height:90px; object-fit:contain; background:var(--sand); }
+.reference-review p,.generation-service-note,.brief-integrity-note { font-size:11px; line-height:1.7; color:var(--muted); }
+.generation-seed { display:flex; align-items:center; gap:16px; margin:20px 0; font-size:12px; }
+.generation-seed input { width:150px; padding:8px; border:1px solid var(--line); background:var(--surface); }
+.refine-image-choice { display:flex; align-items:center; gap:10px; margin-top:20px; font-size:12px; }
+.generated-fashion-board { margin:32px 0 40px; }
+.generated-image-mask { overflow:hidden; background:var(--paper); border:1px solid var(--line); }
+.generated-image-mask img { display:block; width:100%; height:auto; max-height:760px; object-fit:contain; }
+.garment-image-status { min-height:310px; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:35px; }
+.garment-image-status h4 { font-family:'Cormorant Garamond',Georgia,serif; font-size:38px; margin:16px 0; font-weight:400; }
+.garment-image-status p { font-size:12px; line-height:1.7; color:var(--muted); max-width:480px; }
+.generated-fashion-board figcaption { display:flex; flex-direction:column; gap:6px; font-size:11px; line-height:1.6; margin-top:16px; overflow-wrap:anywhere; }
+.generated-fashion-board figcaption span { color:var(--muted); font-size:10px; }
+.generation-error { margin:16px 0; padding:12px 0; border-top:1px solid var(--rose); color:var(--ink); font-size:12px; line-height:1.7; }
+.generation-actions { display:flex; gap:20px; margin-top:16px; }
+@media(max-width:760px) { .garment-image-status { min-height:260px; padding:25px 20px; } .garment-image-status h4 { font-size:32px; } }
+@media(prefers-reduced-motion:reduce) { .processing-thread path { animation:none; stroke-dasharray:none; } }

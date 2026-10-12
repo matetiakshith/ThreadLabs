@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, Sparkles, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Volume2, Sparkles } from 'lucide-react';
 
 export default function VoiceRecorder({ onTranscriptReady }) {
   const [isRecording, setIsRecording] = useState(false);
@@ -35,6 +35,7 @@ export default function VoiceRecorder({ onTranscriptReady }) {
       };
 
       recognitionRef.current = recognition;
+      return () => { recognition.onresult = null; recognition.onend = null; recognition.onerror = null; recognition.abort(); recognitionRef.current = null; };
     } else {
       setIsSupported(false);
     }
@@ -66,7 +67,6 @@ export default function VoiceRecorder({ onTranscriptReady }) {
           "Mujhe ek organic khadi cotton shirt chahiye jisme natural indigo Ajrakh block print aur coconut buttons ho.",
           "Looking for a pure georgette pastel sage green anarkali with fine Lucknowi chikankari shadow work."
         ];
-        let i = 0;
         const interval = setInterval(() => {
           setTranscript(mockPhrases[Math.floor(Math.random() * mockPhrases.length)]);
           clearInterval(interval);
@@ -83,7 +83,7 @@ export default function VoiceRecorder({ onTranscriptReady }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-heritage-silk p-5 shadow-soft space-y-4">
+    <div className="voice-workspace bg-surface border border-line p-5 space-y-4">
       
       {/* Language choice & header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-heritage-silk">
@@ -99,6 +99,7 @@ export default function VoiceRecorder({ onTranscriptReady }) {
 
         {/* Speech dialect */}
         <select
+          aria-label="Speech language"
           value={speechLanguage}
           onChange={(e) => setSpeechLanguage(e.target.value)}
           className="bg-heritage-sand border border-heritage-silk rounded-xl text-xs font-semibold text-heritage-charcoal px-3 py-1.5 focus:outline-none"
@@ -111,15 +112,18 @@ export default function VoiceRecorder({ onTranscriptReady }) {
         </select>
       </div>
 
+      {!isSupported && <p role="status" className="form-note">Speech recognition is unavailable in this browser. The microphone shows a sample transcript for this demo; use the written brief for your own words.</p>}
       {/* Main Mic Button & Visualizer */}
       <div className="flex flex-col items-center justify-center py-6 space-y-4">
         
         <button
           onClick={toggleRecording}
+          aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+          aria-pressed={isRecording}
           className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all ${
             isRecording
               ? 'bg-red-500 text-white shadow-lg ring-8 ring-red-100 scale-105'
-              : 'bg-heritage-indigo text-white hover:bg-heritage-indigoLight shadow-craft hover:scale-105'
+              : 'bg-ink text-surface hover:bg-heritage-indigoLight shadow-craft hover:scale-105'
           }`}
         >
           {isRecording ? (
@@ -162,7 +166,7 @@ export default function VoiceRecorder({ onTranscriptReady }) {
             <span className="flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-heritage-terracotta" /> Transcribed Voice Input:
             </span>
-            <span className="text-[10px] bg-white px-2 py-0.5 rounded-full border border-heritage-silk">
+            <span className="text-[10px] bg-surface px-2 py-0.5 rounded-full border border-heritage-silk">
               Ready to Parse
             </span>
           </div>
@@ -178,7 +182,7 @@ export default function VoiceRecorder({ onTranscriptReady }) {
             </button>
             <button
               onClick={handleApply}
-              className="text-xs font-bold bg-heritage-indigo text-white px-4 py-1.5 rounded-xl hover:bg-heritage-indigoLight shadow-sm transition-all"
+              className="text-xs font-bold bg-ink text-surface px-4 py-1.5 rounded-xl hover:bg-heritage-indigoLight shadow-sm transition-all"
             >
               Use this Voice Requirement
             </button>

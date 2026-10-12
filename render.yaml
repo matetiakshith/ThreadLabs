@@ -1,0 +1,51 @@
+# Free deployment candidate. Read docs/RENDER_DEPLOYMENT.md before applying.
+# Free Render PostgreSQL expires after 30 days. Export/migrate before expiry.
+services:
+  - type: web
+    name: threadlabs-current
+    runtime: node
+    repo: https://github.com/matetiakshith/ThreadLabs.git
+    branch: main
+    region: singapore
+    plan: free
+    buildCommand: npm ci --prefix client --include=dev && npm run build --prefix client && npm ci --prefix server --omit=dev
+    startCommand: npm start --prefix server
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: SERVE_FRONTEND
+        value: 'true'
+      - key: DATA_DIR
+        value: /tmp/threadlabs-legacy-data
+      - key: DATABASE_URL
+        fromDatabase:
+          name: threadlabs-current-db
+          property: connectionString
+      - key: VITE_API_BASE
+        value: /api
+      - key: HF_TOKEN
+        sync: false
+      - key: HF_IMAGE_MODE
+        value: providers
+      - key: HF_IMAGE_PROVIDER
+        value: fal-ai
+      - key: HF_IMAGE_MODEL
+        value: Qwen/Qwen-Image
+      - key: HF_IMAGE_EDIT_PROVIDER
+        value: fal-ai
+      - key: HF_IMAGE_EDIT_MODEL
+        value: Qwen/Qwen-Image-Edit
+      - key: LEGACY_API_TOKEN
+        generateValue: true
+databases:
+  - name: threadlabs-current-db
+    plan: free
+    region: singapore
+    databaseName: threadlabs
+    user: threadlabs

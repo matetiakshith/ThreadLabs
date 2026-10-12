@@ -1,0 +1,12 @@
+/* Draw the existing timeline connector as it is read. Actual stage status and
+   the status percentage above it remain entirely controlled by order data. */
+.order-timeline > div::before { transform-origin:top; transform:scaleY(var(--journey-scroll,1)); }
+@media(prefers-reduced-motion:reduce) {
+  .order-timeline > div::before { transform:none; }
+}
+
+.scroll-scene { position:relative; min-width:0; transform-origin:50% 50%; }
+.scroll-type { display:inline; }
+.creation-caption { position:relative; }
+.creation-caption::after { content:''; position:absolute; left:0; right:0; bottom:-12px; height:1px; background:var(--rose); transform-origin:left; transform:scaleX(var(--caption-progress,1)); }
+@media(prefers-reduced-motion:reduce) { .scroll-scene { transform:none!important; opacity:1!important; } .creation-caption::after { transform:none; } }
