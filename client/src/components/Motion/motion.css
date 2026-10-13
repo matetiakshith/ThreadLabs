@@ -10,3 +10,7 @@
 .creation-caption { position:relative; }
 .creation-caption::after { content:''; position:absolute; left:0; right:0; bottom:-12px; height:1px; background:var(--rose); transform-origin:left; transform:scaleX(var(--caption-progress,1)); }
 @media(prefers-reduced-motion:reduce) { .scroll-scene { transform:none!important; opacity:1!important; } .creation-caption::after { transform:none; } }
+/* Match the existing CTA dimensions; only Magnet's inner transform can move. */
+.campaign-actions .magnet-cta .primary-button{min-width:218px;justify-content:space-between}
+@media(max-width:760px){.campaign-actions .magnet-cta .primary-button{min-width:202px}}
+@media(prefers-reduced-motion:reduce){[data-gsap-motion],[data-react-bits] {clip-path:none!important;opacity:1!important;transform:none!important}}

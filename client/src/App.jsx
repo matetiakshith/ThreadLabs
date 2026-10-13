@@ -10,6 +10,7 @@ import CustomFashionCursor from './components/Unseen/CustomFashionCursor';
 import RequestInbox from './components/ArtisanPortal/RequestInbox';
 import LoginPage from './components/LoginPage';
 import BeatleAssistant from './components/Beatle/BeatleAssistant';
+import SmoothScroll from './components/Motion/SmoothScroll';
 import AtelierMotion from './components/Motion/AtelierMotion.jsx';
 import { createMeasurementDraft, loadMeasurementDraft, measurementDraftKey, serializeMeasurements, validateMeasurements, garmentLengthRequirement } from './components/Measurements/measurements';
 import { demoRequests } from './data/demoRequests';
@@ -166,7 +167,7 @@ function Application() {
 
   return (
     <MotionConfig reducedMotion="user"><div className="threadlabs-app" ref={motionRoot}>
-      <AtelierMotion rootRef={motionRoot} />
+      <SmoothScroll page={activeTab} /><AtelierMotion rootRef={motionRoot} />
       
       {/* Luxury Spring Cursor */}
       <CustomFashionCursor cursorState="default" />

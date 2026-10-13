@@ -13,6 +13,7 @@ import { buildGarmentBrief } from './garmentBrief.js';
 import { prepareReferenceFile } from './referenceImage.js';
 import { playClickSound, playLoomSwoosh, playSuccessChime } from '../../utils/audioEffects';
 import './garment-generation.css';
+import AnimatedContent from '../ReactBits/AnimatedContent';
 import FashionCollection from './FashionCollection';
 const InteractiveCloth3D = lazy(() => import('../Three/InteractiveCloth3D.jsx'));
 
@@ -126,7 +127,7 @@ export default function CustomerNeeds({ onProceedToArtisanMatching, initialPromp
           {inputMode==='voice' && <VoiceRecorder onTranscriptReady={text=>setPromptText(text)}/>}
           {inputMode==='image' && <div className="upload-area"><ImageIcon size={28} strokeWidth={1}/><div><strong>Begin with something that inspires you.</strong><p>A garment, a textile, a detail. PNG, JPG or WebP, up to 4 MB.</p></div><input aria-label="Upload a garment reference" type="file" accept="image/png,image/jpeg,image/webp" onChange={loadReference}/>{isReadingReference && <p role="status">Preparing your reference…</p>}</div>}
           {inputMode==='sketch' && <SketchPad initialSketch={reference?.kind === 'sketch' ? reference : null} onSketchChange={data=>{ setReference({ ...data, kind:'sketch' }); setReferenceError(''); setRefineFromImage(false); }}/>}
-          {reference && <div className="reference-review"><img src={reference.dataUrl} alt={reference.description}/><div><p>{reference.kind === 'sketch' ? 'Your sketch is attached.' : 'Your reference is attached.'} It will be sent as an image when you generate.{reference.resized && ' Resized to 2,048 px; photo metadata removed.'}</p><button className="text-button" onClick={removeReference}>Remove reference</button></div></div>}
+          {reference && <AnimatedContent className="reference-review" revision={reference.dataUrl}><img src={reference.dataUrl} alt={reference.description}/><div><p>{reference.kind === 'sketch' ? 'Your sketch is attached.' : 'Your reference is attached.'} It will be sent as an image when you generate.{reference.resized && ' Resized to 2,048 px; photo metadata removed.'}</p><button className="text-button" onClick={removeReference}>Remove reference</button></div></AnimatedContent>}
           {reference && capabilities && !capabilities.supportsReference && <p className="generation-error">This image service cannot condition images on your reference. Your image stays attached. Remove it explicitly to generate from text, or configure a compatible editing service.</p>}
           {referenceError && <p role="alert" className="generation-error">{referenceError} <button className="text-button" onClick={removeReference}>Clear upload error</button></p>}
           <div className="studio-input-label"><label htmlFor="design-prompt">What do you have in mind?</label><span>YOUR CREATIVE BRIEF</span></div>

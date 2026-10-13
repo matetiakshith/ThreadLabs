@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchProfile, saveProfile, addPortfolio, editPortfolio, removePortfolio, mediaURL } from '../../services/api';
 import { prepareReferenceFile } from '../Needs/referenceImage';
 import './profile-editor.css';
+import AnimatedContent from '../ReactBits/AnimatedContent';
 export default function ArtisanProfileEditor({draftBio}) {
   const [loaded,setLoaded]=useState(false),[reload,setReload]=useState(0);
   const [profile,setProfile]=useState({}),[portfolio,setPortfolio]=useState([]),[piece,setPiece]=useState({title:'',description:'',category:''}),[image,setImage]=useState(null),[editing,setEditing]=useState(null),[pending,setPending]=useState(false),[error,setError]=useState(''),[status,setStatus]=useState('');
@@ -33,7 +34,7 @@ export default function ArtisanProfileEditor({draftBio}) {
         {!editing&&<label className="field-label">Completed garment photograph<input type="file" accept="image/png,image/jpeg,image/webp" disabled={pending} onChange={e=>{const file=e.target.files?.[0];if(file)act(async()=>setImage(await prepareReferenceFile(file)),'Photograph ready. Save the piece to upload it.')}}/></label>}
         {image&&<img className="portfolio-preview" src={image.dataUrl} alt="Photograph ready to upload"/>}<button disabled={pending} className="primary-button">{editing?'Save piece details':'Add portfolio piece'}</button>{editing&&<button type="button" className="text-button" onClick={()=>{setEditing(null);setPiece({title:'',description:'',category:''})}}>Cancel edit</button>}
       </form>
-      <div className="portfolio-saved">{portfolio.map(item=><article key={item.id}><img src={mediaURL(item.mediaId)} alt={item.title}/><div><h3>{item.title}</h3><small>{item.category}</small><p>{item.description}</p><button disabled={pending} className="text-button" onClick={()=>{setEditing(item.id);setPiece({title:item.title,description:item.description,category:item.category});setImage(null)}}>Edit details</button><button disabled={pending} className="text-button" onClick={()=>act(async()=>{await removePortfolio(item.id);setPortfolio(v=>v.filter(p=>p.id!==item.id))},'Piece removed from your portfolio.')}>Remove piece</button></div></article>)}</div>
+      <div className="portfolio-saved">{portfolio.map(item=><AnimatedContent as="article" key={item.id}><img src={mediaURL(item.mediaId)} alt={item.title}/><div><h3>{item.title}</h3><small>{item.category}</small><p>{item.description}</p><button disabled={pending} className="text-button" onClick={()=>{setEditing(item.id);setPiece({title:item.title,description:item.description,category:item.category});setImage(null)}}>Edit details</button><button disabled={pending} className="text-button" onClick={()=>act(async()=>{await removePortfolio(item.id);setPortfolio(v=>v.filter(p=>p.id!==item.id))},'Piece removed from your portfolio.')}>Remove piece</button></div></AnimatedContent>)}</div>
     </section>{error&&<p role="alert" className="generation-error">{error}</p>}{status&&<p role="status">{status}</p>}
   </div>;
 }

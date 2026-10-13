@@ -1,4 +1,5 @@
-import { Component, Suspense, lazy, useCallback, useEffect, useId, useState } from 'react';
+import { gsap,useGSAP } from '../Motion/engine';
+import { Component, Suspense, lazy, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { ArrowRight, Minus, Plus, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -15,6 +16,7 @@ class MapBoundary extends Component {
 }
 
 export default function IndiaArtisanMap({ initialState, onExplore }) {
+  const selectionRoot=useRef(null);
   const { theme } = useTheme();
   const reduced = useReducedMotion();
   const id = useId();
@@ -47,8 +49,9 @@ export default function IndiaArtisanMap({ initialState, onExplore }) {
       .catch(reason => { if (mounted) setError(reason.message); });
     return () => { mounted = false; };
   }, []);
+  useGSAP(()=>{if(reduced)return;try{gsap.fromTo('.india-map-selection',{opacity:.55,y:3},{opacity:1,y:0,duration:.25,ease:'power2.out',clearProps:'transform,opacity'});}catch{const caption=selectionRoot.current?.querySelector('.india-map-selection');caption?.style.removeProperty('transform');caption?.style.removeProperty('opacity');}},{dependencies:[selected,reduced],revertOnUpdate:true,scope:selectionRoot});
   const available = supported && regions && !error;
-  return <div className="india-artisan-map">
+  return <div className="india-artisan-map" ref={selectionRoot}>
     <div className="india-map-viewport" onPointerLeave={() => setHovered(null)}>
       <div className="india-map-caption"><span>INDIA / 36 REGIONS</span><span>Geographic craft discovery</span></div>
       {available ? <MapBoundary onFailure={onFailure}><Suspense fallback={<div className="india-map-notice" role="status">Preparing India’s boundaries…</div>}>

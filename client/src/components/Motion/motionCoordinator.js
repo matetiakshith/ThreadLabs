@@ -1,168 +1,81 @@
-import { animate, createScope, createTimeline, onScroll, stagger } from 'animejs';
-import { observeReducedMotion } from '../Measurements/useReducedMotion.js';
+import { gsap,ScrollTrigger } from './engine';
+import { choreographyExcluded,storyPinDistance } from './motionPolicy';
 
-const excluded = '.india-artisan-map, .cinematic-intro, .campaign-brand, .sketch-workspace, .voice-workspace, .measurement-disclosure';
-const headings = '.page-heading h1, .page-heading h2, .creations-title, .login-art-copy h2, .login-form-wrap h1, .desk-heading h1, .order-heading h2, .maker-search-intro h2';
-const defaults = { animate, createScope, createTimeline, onScroll, stagger };
-
-// One coordinator follows the existing conditional views. It never owns a
-// Framer Motion transform or any state in the map, forms, or order tracker.
-export function installAtelierMotion(root, environment = window, api = defaults) {
-  if (!environment.matchMedia || !environment.MutationObserver || !environment.ResizeObserver || !environment.requestAnimationFrame) return () => {};
-  const records = new Map();
-  const seen = new WeakSet();
-  const microScopes = new Map();
-  let reduced = true;
-  let frame = 0;
-  let stopped = false;
-
-  const discard = (node, record) => {
-    record.scope.revert();
-    node.removeAttribute?.('data-anime-scroll');
-    records.delete(node);
-  };
-  const stopMotion = () => {
-    for (const [node, record] of records) discard(node, record);
-    for (const record of microScopes.values()) record.scope.revert();
-    microScopes.clear();
-  };
-  const register = (node, treatment, scrub = false) => {
-    if (node.isConnected === false || records.has(node) || (!scrub && seen.has(node)) || node.closest(excluded)) return;
-    let scope;
-    try {
-      scope = api.createScope({ root: node });
-      const record = { scope, animation: null, scroll: null };
-      scope.add(() => {
-        const container = node.closest('.dialog-backdrop > div');
-        record.scroll = api.onScroll({ target: node, ...(container ? { container } : {}), enter: scrub ? 'bottom top' : 'bottom-=24 top', leave: 'top bottom', sync: scrub ? true : 'play', repeat: scrub });
-        record.animation = treatment(node, record.scroll);
-        if (!scrub) record.animation.onComplete = () => record.scroll.revert();
-      });
-      node.setAttribute?.('data-anime-scroll', scrub ? 'linked' : 'triggered');
-      records.set(node, record);
-      if (!scrub) seen.add(node);
-    } catch {
-      scope?.revert(); // Base HTML and CSS are always fully visible.
-    }
-  };
-
-  const scan = () => {
-    frame = 0;
-    if (stopped) return;
-    for (const [node, record] of records) if (!root.contains(node)) discard(node, record);
-    for (const [node, record] of microScopes) if (!root.contains(node)) { record.scope.revert(); microScopes.delete(node); }
-    if (reduced) return;
-    root.querySelectorAll(headings).forEach(node => register(node, (target, scroll) => {
-      const timeline = api.createTimeline({ autoplay: scroll }).add(target, {
-        clipPath: ['inset(0 0 65% 0)', 'inset(0 0 0% 0)'], opacity: [.3, 1], y: [28, 0], duration: 850, ease: 'out(4)',
-      });
-      const emphasis = target.querySelectorAll('em');
-      if (emphasis.length) timeline.add(emphasis, { opacity: [.6, 1], duration: 420, ease: 'out(3)' }, 140);
-      return timeline;
-    }));
-
-    root.querySelectorAll('.workspace-choices, .studio-aside ol, .design-parameters, .artisan-profile .portfolio-entry').forEach(node => {
-      if (!node.children.length) return;
-      register(node, (target, scroll) => api.animate(Array.from(target.children), {
-      opacity: [.3, 1], x: [-28, 0], delay: api.stagger(95), duration: 650, ease: 'out(3)', autoplay: scroll,
+// Every record owns its own GSAP context; removed conditional views are reverted
+// before their React DOM can be recycled. No global killAll or document selectors.
+export function installAtelierMotion(root) {
+  const media=gsap.matchMedia();
+  media.add({all:'(min-width:0px)',reduce:'(prefers-reduced-motion:reduce)',desktop:'(min-width:1100px) and (min-height:740px)',fine:'(pointer:fine)'},({conditions})=>{
+    if(conditions.reduce)return;
+    const records=new Map();let scanFrame=0,refreshFrame=0,closed=false,serial=0;
+    const register=(node,kind,factory)=>{
+      if(!node?.isConnected||records.has(node)||node.closest(choreographyExcluded))return;
+      let context;
+      try{
+        context=gsap.context(()=>{},node);context.add(()=>factory(node));
+        records.set(node,{context,kind});node.dataset.gsapMotion=kind;
+      }catch{context?.revert();node.style.removeProperty('clip-path');node.style.removeProperty('opacity');node.style.removeProperty('transform');}
+    };
+    const scrub=(trigger,extra={})=>({id:`threadlabs-${++serial}`,trigger,start:'clamp(top bottom)',end:'clamp(bottom top)',scrub:.45,invalidateOnRefresh:true,...extra});
+    const reveal=(node,extra={})=>node.getBoundingClientRect().top<innerHeight*.91?undefined:({trigger:node,start:'clamp(top 91%)',once:true,fastScrollEnd:true,...extra});
+    const scan=()=>{
+      scanFrame=0;if(closed)return;
+      for(const [node,record] of records)if(!root.contains(node)){record.context.revert();delete node.dataset.gsapMotion;records.delete(node);}
+      root.querySelectorAll('.page-heading h1,.page-heading h2,.creations-title,.desk-heading h1,.maker-search-intro h2,.artisan-profile-editor h2').forEach(node=>register(node,'headline',target=>{
+        gsap.fromTo(target,{clipPath:'inset(0 0 55% 0)',y:22,opacity:.6},{clipPath:'inset(0%)',y:0,opacity:1,duration:.8,ease:'power3.out',scrollTrigger:reveal(target),clearProps:'clipPath,transform,opacity'});
       }));
-    });
-    root.querySelectorAll('.creation-item').forEach((node, index) => {
-      const images = node.querySelectorAll('.study-board, .study-silhouette');
-      const captions = node.querySelectorAll('.creation-caption');
-      if (!images.length && !captions.length) return;
-      register(node, (_target, scroll) => {
-        const timeline = api.createTimeline({ autoplay: scroll });
-        if (images.length) timeline.add(images, { clipPath: [index % 2 ? 'inset(0 0 0 48%)' : 'inset(0 48% 0 0)', 'inset(0 0 0 0)'], duration: 850, ease: 'out(4)' }, 0);
-        if (captions.length) timeline.add(captions, { x: [index % 2 ? 32 : -32, 0], opacity: [.25, 1], duration: 750, ease: 'out(3)' }, 160);
-        return timeline;
+      root.querySelectorAll('[data-motion-treatment]').forEach(node=>{
+        if(node.matches('.studio-aside'))return; // pin owns this element, never a second transform
+        register(node,'scene-scrub',target=>{
+          const board=target.dataset.motionTreatment==='board';
+          gsap.fromTo(target,{y:board?22:14},{y:board?-18:-12,ease:'none',scrollTrigger:scrub(target)});
+        });
       });
-    });
-    root.querySelectorAll('.studio-aside-image, .generated-image-mask, .garment-spec, .artisan-row h4, .artisan-profile h2').forEach(node => register(node, (target, scroll) => api.animate(target, {
-      clipPath: ['inset(0 0 38% 0)', 'inset(0 0 0% 0)'], opacity: [.45, 1], duration: 850, ease: 'out(4)', autoplay: scroll,
-    })));
-
-    // A reversible Anime timeline reveals typography and draws the rule as
-    // each existing fashion study traverses the viewport. Motion owns its outer
-    // figure's scale/rotation; Anime never writes that transform.
-    root.querySelectorAll('.creation-caption').forEach(node => register(node, (target, scroll) => api.createTimeline({ autoplay: scroll })
-      .add(target, { '--caption-progress': [0, 1], ease: 'linear', duration: 1000 }, 0), true));
-    root.querySelectorAll('.order-timeline > div').forEach(node => register(node, (target, scroll) => api.animate(target, {
-      '--journey-scroll': [0, 1], ease: 'linear', autoplay: scroll,
-    }), true));
-    root.querySelectorAll('.order-timeline > div > div').forEach(node => {
-      if (!node.lastElementChild) return;
-      register(node, (target, scroll) => api.animate(target.lastElementChild, {
-      opacity: [.65, 1], x: [8, 0], ease: 'out(3)', duration: 480, autoplay: scroll,
+      root.querySelectorAll('.study-silhouette,.study-board').forEach((node,index)=>register(node,'study-mask',mask=>{
+        const target=mask.closest('.creation-item'),caption=target.querySelector('.creation-caption');
+        const timeline=gsap.timeline({scrollTrigger:reveal(target)});
+        if(mask)timeline.fromTo(mask,{clipPath:`inset(0 ${index%2?0:10}% 12% ${index%2?10:0}%)`},{clipPath:'inset(0%)',duration:.9,ease:'power3.inOut',clearProps:'clipPath'},0);
+        if(caption)timeline.fromTo(caption.children,{y:10,opacity:.65},{y:0,opacity:1,stagger:.09,duration:.65,ease:'power3.out',clearProps:'transform,opacity'},.12);
       }));
-    });
-  };
-  const scheduleScan = () => {
-    if (!frame && !stopped) frame = environment.requestAnimationFrame(scan);
-  };
-  const stopReducedObserver = observeReducedMotion(value => {
-    reduced = value;
-    if (value) stopMotion();
-    else scheduleScan();
-  }, environment);
-  const mutations = new environment.MutationObserver(scheduleScan);
-  mutations.observe(root, { childList: true, subtree: true });
-  const resize = new environment.ResizeObserver(() => {
-    for (const [node, record] of records) {
-      if (!root.contains(node)) { discard(node, record); continue; }
-      // Anime.js initializes explicit targets on its next frame. A root resize
-      // can arrive earlier; refreshing a pending observer would read a null target.
-      if (!record.scroll?.ready || !record.scroll.target || record.scroll.reverted) continue;
-      try { record.scroll.refresh(); } catch { discard(node, record); }
-    }
-  });
-  resize.observe(root);
-
-  const controlFor = event => event.target.closest?.('button, a, .field-label, .creation-item') || null;
-  const micro = (event, entering) => {
-    if (reduced) return;
-    const control = controlFor(event);
-    if (!control || !root.contains(control) || control.closest(excluded) || control.contains(event.relatedTarget)) return;
-    const target = control.querySelector('.creation-name, svg:not(.study-garment-crop), .nav-number');
-    if (!target) return;
-    const existing = microScopes.get(target);
-    if (existing) {
-      existing.returning = !entering;
-      if (entering) existing.animation.play();
-      else existing.animation.reverse();
-      return;
-    }
-    if (!entering) return;
-    let scope;
-    try {
-      scope = api.createScope({ root: control });
-      const record = { scope, animation: null, returning: false };
-      scope.add(() => { record.animation = api.animate(target, {
-        x: [0, 2], y: [0, -1], scale: [1, 1.035], duration: 260, ease: 'out(3)',
-        onComplete: () => {
-          if (record.returning) { scope.revert(); if (microScopes.get(target) === record) microScopes.delete(target); }
-        },
-      }); });
-      microScopes.set(target, record);
-    } catch { scope?.revert(); }
-  };
-  const over = event => micro(event, true);
-  const out = event => micro(event, false);
-  const focus = event => {
-    // Keyboard focus always exposes the complete content immediately.
-    for (const [node, record] of records) if (node.contains(event.target)) record.animation?.complete();
-    micro(event, true);
-  };
-  const listeners = [['pointerover', over], ['pointerout', out], ['focusin', focus], ['focusout', out]];
-  for (const [event, callback] of listeners) root.addEventListener(event, callback);
-  scheduleScan();
-  return () => {
-    stopped = true;
-    if (frame) environment.cancelAnimationFrame(frame);
-    mutations.disconnect();
-    resize.disconnect();
-    stopReducedObserver();
-    for (const [event, callback] of listeners) root.removeEventListener(event, callback);
-    stopMotion();
-  };
+      root.querySelectorAll('.creation-caption').forEach(node=>register(node,'caption-rule-scrub',target=>gsap.fromTo(target,{'--caption-progress':0},{'--caption-progress':1,ease:'none',scrollTrigger:scrub(target,{start:'clamp(top 90%)',end:'clamp(top 35%)'})})));
+      root.querySelectorAll('.studio-aside').forEach(node=>{
+        const layout=node.closest('.studio-layout');
+        const eligible=!!(conditions.desktop&&conditions.fine&&layout&&storyPinDistance(layout.offsetHeight,node.offsetHeight)>120);
+        const previous=records.get(node);
+        if(previous&&previous.eligible!==eligible){previous.context.revert();records.delete(node);}
+        register(node,'studio-story',target=>{
+          const story=target.querySelector('ol'),steps=story?.querySelectorAll('li');
+          if(eligible&&story){
+            // Pin only existing read-only story lines; preview, forms and controls stay native.
+            const timeline=gsap.timeline({scrollTrigger:scrub(story,{pin:story,pinSpacing:false,start:'top 60%',end:()=>`+=${storyPinDistance(layout.offsetHeight,target.offsetHeight)}`,anticipatePin:1})});
+            steps.forEach((step,index)=>timeline.fromTo(step,{x:5,opacity:.65},{x:0,opacity:1,duration:.5,ease:'none'},index*.25));
+            timeline.fromTo(target,{'--studio-story-progress':0},{'--studio-story-progress':1,duration:1,ease:'none'},0);
+          }
+        });
+        if(records.has(node))records.get(node).eligible=eligible;
+      });
+      root.querySelectorAll('.studio-aside-image img').forEach(node=>register(node,'editorial-image-scrub',target=>gsap.fromTo(target,{scale:1.055,yPercent:2},{scale:1,yPercent:-2,ease:'none',scrollTrigger:scrub(target.parentElement,{id:'threadlabs-editorial-image'})})));
+      root.querySelectorAll('.generated-image-mask').forEach(node=>register(node,'board-mask',target=>{
+        // The image stays at full scale; only the enclosing presentation reveals.
+        gsap.fromTo(target,{clipPath:'inset(5% 0 10% 0)'},{clipPath:'inset(0%)',duration:.7,ease:'power3.inOut',scrollTrigger:reveal(target),clearProps:'clipPath'});
+      }));
+      root.querySelectorAll('.design-parameters,.workspace-choices').forEach(node=>register(node,'stagger',target=>gsap.fromTo(target.children,{y:12,opacity:.65},{y:0,opacity:1,duration:.65,stagger:.065,ease:'power3.out',scrollTrigger:reveal(target),clearProps:'transform,opacity'})));
+      root.querySelectorAll('.garment-spec h4,.design-brief blockquote,.artisan-row h4,.artisan-profile h2').forEach(node=>register(node,'text-mask',target=>gsap.fromTo(target,{clipPath:'inset(0 0 38% 0)'},{clipPath:'inset(0%)',duration:.65,ease:'power3.out',scrollTrigger:reveal(target),clearProps:'clipPath'})));
+      root.querySelectorAll('.artisan-row img,.portfolio-saved article img').forEach(node=>register(node,'portfolio-mask',target=>gsap.fromTo(target,{clipPath:'inset(0 0 18% 0)'},{clipPath:'inset(0%)',duration:.6,ease:'power3.out',scrollTrigger:reveal(target),clearProps:'clipPath'})));
+      root.querySelectorAll('.order-timeline > div').forEach(node=>register(node,'journey-scrub',target=>gsap.fromTo(target,{'--journey-scroll':0},{'--journey-scroll':1,ease:'none',scrollTrigger:scrub(target,{start:'clamp(top 85%)',end:'clamp(bottom 65%)'})})));
+      root.querySelectorAll('.order-timeline > div > div').forEach(node=>register(node,'journey-stage',target=>{
+        if(target.lastElementChild)gsap.fromTo(target.lastElementChild,{x:10,opacity:.7},{x:0,opacity:1,duration:.45,ease:'power2.out',scrollTrigger:reveal(target),clearProps:'transform,opacity'});
+      }));
+      refresh();
+    };
+    const refresh=()=>{if(!refreshFrame&&!closed)refreshFrame=requestAnimationFrame(()=>{refreshFrame=0;ScrollTrigger.refresh();});};
+    const schedule=()=>{if(!scanFrame&&!closed)scanFrame=requestAnimationFrame(scan);};
+    const mutation=new MutationObserver(schedule);mutation.observe(root,{childList:true,subtree:true});
+    let resizeTimer;const resize=new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{schedule();refresh();},120);});resize.observe(root);
+    const focus=event=>{for(const [node,record] of records)if(node.contains(event.target)&&!record.kind.includes('scrub')&&record.kind!=='studio-story')record.context.getTweens().forEach(tween=>tween.totalProgress(1));};
+    root.addEventListener('load',refresh,true);root.addEventListener('focusin',focus);
+    document.fonts?.ready.then(()=>{if(!closed)refresh();});schedule();
+    return()=>{closed=true;clearTimeout(resizeTimer);cancelAnimationFrame(scanFrame);cancelAnimationFrame(refreshFrame);mutation.disconnect();resize.disconnect();root.removeEventListener('load',refresh,true);root.removeEventListener('focusin',focus);for(const [node,record]of records){record.context.revert();delete node.dataset.gsapMotion;}records.clear();};
+  },root);
+  return()=>media.revert();
 }
