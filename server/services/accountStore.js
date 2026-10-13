@@ -34,6 +34,9 @@ export class AccountStore {
   async createAccount(account) {
     await this.pool.query('INSERT INTO threadlabs_accounts(id,identity,password_hash,role,artisan_id) VALUES($1,$2,$3,$4,$5)', [account.id, account.identity, account.password_hash, account.role, account.artisan_id || null]);
   }
+  async createArtisan(account,profile) {
+    await this.pool.query(`WITH created AS (INSERT INTO threadlabs_accounts(id,identity,password_hash,role,artisan_id) VALUES($1,$2,$3,'artisan',$4) RETURNING id) INSERT INTO threadlabs_profiles(account_id,payload) SELECT id,$5::jsonb FROM created`,[account.id,account.identity,account.password_hash,account.artisan_id,JSON.stringify(profile)]);
+  }
   async createSession(hash, accountId, expires) {
     await this.pool.query('DELETE FROM threadlabs_sessions WHERE expires_at < NOW()');
     await this.pool.query('INSERT INTO threadlabs_sessions(token_hash,account_id,expires_at) VALUES($1,$2,$3)', [hash, accountId, expires]);
@@ -53,6 +56,14 @@ export class AccountStore {
     const field = user.role === 'artisan' ? 'artisan_id' : 'customer_id';
     const value = user.role === 'artisan' ? user.artisan_id : user.id;
     return (await this.pool.query(`SELECT payload FROM threadlabs_commissions WHERE ${field}=$1 ORDER BY created_at DESC LIMIT 200`, [value])).rows.map(row => row.payload);
+  }
+  async assignedDesign(user,id) {
+    const field=user.role==='artisan'?'artisan_id':'customer_id',value=user.role==='artisan'?user.artisan_id:user.id;
+    return (await this.pool.query(`SELECT customer_id,payload->>'designId' AS design_id FROM threadlabs_commissions WHERE id=$1 AND ${field}=$2`,[id,value])).rows[0];
+  }
+  async commissionedMedia(user,mediaId) {
+    if(user.role!=='artisan')return null;
+    return (await this.pool.query(`SELECT m.object_key FROM threadlabs_media m JOIN threadlabs_designs d ON d.account_id=m.account_id JOIN threadlabs_commissions c ON c.payload->>'designId'=d.id::text WHERE m.id=$1 AND c.artisan_id=$2 AND EXISTS(SELECT 1 FROM jsonb_array_elements(d.views) v WHERE v->>'mediaId'=m.id::text) LIMIT 1`,[mediaId,user.artisan_id])).rows[0]?.object_key;
   }
   async createCommission(user, payload) {
     await this.pool.query('INSERT INTO threadlabs_commissions(id,customer_id,artisan_id,payload) VALUES($1,$2,$3,$4)', [payload.orderId, user.id, payload.artisanId, payload]);

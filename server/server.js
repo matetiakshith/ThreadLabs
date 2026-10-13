@@ -7,6 +7,12 @@ import { parseDesignIdea } from './services/aiExtractionService.js';
 import { matchArtisans } from './services/matcherService.js';
 import { imageGenerationRouter } from './routes/imageGeneration.js';
 import { configureDeployment, frontendOrigins, initializeData, serveFrontend } from './deployment.js';
+import { Phase2Store, phase2Ready, migratePhase2, recoverySnapshotReady } from './services/phase2Store.js';
+import { PrivateStorage } from './services/privateStorage.js';
+import { profileRoutes, mediaRoutes } from './routes/phase2.js';
+import { designRoutes } from './routes/designs.js';
+import { artisanDirectoryRoutes, publishedArtisans } from './routes/artisanDirectory.js';
+import { beatleRoutes } from './routes/beatle.js';
 import { AccountStore } from './services/accountStore.js';
 import { accountRoutes, commissionRoutes } from './routes/accounts.js';
 import { validMeasurementPayload } from './services/measurementValidation.js';
@@ -48,12 +54,30 @@ if (process.env.DATABASE_URL) {
   }
   catch { console.error('Account database initialization failed. Verify DATABASE_URL and database availability.'); await candidate.close(); }
 }
-const accounts = accountRoutes({ store: accountStore });
+// Phase 2 migrations are explicit: review and back up production before enabling.
+if (accountStore && process.env.PHASE2_MIGRATE === 'true') {
+  try {
+    await migratePhase2(accountStore, {backup:process.env.NODE_ENV === 'production'});
+    console.log('Phase 2 additive migration completed; production baseline recovery snapshot retained.');
+  } catch {
+    console.error('Phase 2 migration failed; startup stopped without exposing database details.');
+    await accountStore.close(); process.exit(1);
+  }
+}
+const phase2 = await phase2Ready(accountStore) ? new Phase2Store(accountStore) : null;
+const phase2RecoverySnapshot=await recoverySnapshotReady(accountStore);
+const storage = new PrivateStorage();
+const accounts = accountRoutes({ store: accountStore, phase2 });
+app.use('/api/artisan-directory',artisanDirectoryRoutes({store:phase2}));
+app.use('/api/profile', profileRoutes({store:phase2,storage,requireUser:accounts.requireUser}));
+app.use('/api/media', mediaRoutes({store:phase2,storage,accountStore,requireUser:accounts.requireUser}));
+app.use('/api/designs', designRoutes({store:phase2,storage,requireUser:accounts.requireUser}));
+app.use('/api/beatle', beatleRoutes({store:phase2,accountStore,requireUser:accounts.requireUser}));
 app.use('/api/auth', accounts.router);
 const publicArtisans = JSON.parse(await fs.readFile(path.join(__dirname, '../client/src/data/artisans.json'), 'utf8'));
 const catalogArtisans = JSON.parse(await fs.readFile(ARTISANS_FILE, 'utf8'));
 const artisanProfiles = new Map(publicArtisans.map(artisan => [artisan.id, { ...artisan, phone: catalogArtisans.find(profile => profile.id === artisan.id)?.phone }]));
-app.use('/api/commissions', commissionRoutes({ store: accountStore, requireUser: accounts.requireUser, artisanIds: new Set(publicArtisans.map(artisan => artisan.id)), artisanProfiles, validateMeasurements: validMeasurementPayload }));
+app.use('/api/commissions', commissionRoutes({ store: accountStore, requireUser: accounts.requireUser, artisanIds: new Set(publicArtisans.map(artisan => artisan.id)), artisanProfiles, designStore:phase2, resolveArtisan: async id => (await publishedArtisans(phase2)).find(artisan=>artisan.id===id), validateMeasurements: validMeasurementPayload }));
 if (process.env.NODE_ENV === 'production') asyncApi('post', '/api/ai/generate-image', accounts.requireUser);
 app.use('/api/ai', imageGenerationRouter({ env: { ...process.env, FRONTEND_ORIGINS: frontendOrigins().join(',') } }));
 
@@ -85,7 +109,7 @@ async function writeData(filePath, data) {
 
 // Health check
 asyncApi('get', '/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'ThreadLabs Backend API', accountsReady: !!accountStore, revision: process.env.RENDER_GIT_COMMIT || null, time: new Date().toISOString() });
+  res.json({ status: 'ok', service: 'ThreadLabs Backend API', accountsReady: !!accountStore, phase2Ready: !!phase2, phase2RecoverySnapshot, revision: process.env.RENDER_GIT_COMMIT || null, time: new Date().toISOString() });
 });
 
 // 1. Heritage Crafts Knowledge Base
@@ -357,8 +381,8 @@ if (process.env.SERVE_FRONTEND === 'true') {
 }
 
 app.use((error, _req, res, _next) => {
-  const status = error.status === 413 ? 413 : error.type === 'entity.parse.failed' ? 400 : 500;
-  res.status(status).json({ error: status === 413 ? 'Request body exceeds 10 MB.' : status === 400 ? 'Invalid JSON request.' : 'The request could not be completed.' });
+  const status = error.status === 413 ? 413 : error.type === 'entity.parse.failed' ? 400 : [400,422,502,503,504].includes(error.status) ? error.status : 500;
+  res.status(status).json({ error: status === 413 ? 'Request body exceeds 10 MB.' : status === 400 ? 'Invalid JSON request.' : error.status && status !== 500 ? error.message : 'The request could not be completed.' });
 });
 
 app.listen(PORT, process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1'), () => {

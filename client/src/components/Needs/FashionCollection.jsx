@@ -1,0 +1,19 @@
+import { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Maximize2, X } from 'lucide-react';
+import { mediaURL } from '../../services/api';
+import DialogFrame from '../ui/DialogFrame';
+export default function FashionCollection({collection,pending,error,onRetry,onCancel,readOnly=false}) {
+  const [selected,setSelected]=useState(0),[fullscreen,setFullscreen]=useState(false),[loadError,setLoadError]=useState('');
+  const reduced=useReducedMotion(),views=collection?.views||[],view=views[selected]||views[0];
+  const image=view?.mediaId?mediaURL(view.mediaId):null;
+  const choose=index=>{setSelected((index+views.length)%views.length);setLoadError('')};
+  return <figure className="generated-fashion-board" aria-label="Your fashion collection">
+    <div className="generated-image-mask"><AnimatePresence mode="wait">{image?<motion.img key={image} src={image} alt={`${view.label} — AI concept of ${collection.prompt}`} initial={{opacity:reduced?1:0}} animate={{opacity:1}} transition={{duration:reduced?0:.25}} onError={()=>setLoadError('This saved image could not be loaded.')}/>:<div className="garment-image-status" role="status"><span className="eyebrow">{view?.label||'Fashion collection'}</span><h4>{view?.status==='processing'?'Your idea, taking shape.':view?.status==='failed'?'This view needs another try.':'Waiting for your garment.'}</h4><p>{view?.status==='processing'?'Creating this view from the original brief and master garment.':view?.status==='queued'?'Views are generated one at a time after the master garment.':view?.error||error||'No image is available yet.'}</p></div>}</AnimatePresence></div>
+    {views.length>1&&<div className="collection-thumbnails" aria-label="Select garment view">{views.map((item,index)=><button key={item.id} aria-pressed={index===selected} onClick={()=>choose(index)}>{item.mediaId?<img src={mediaURL(item.mediaId)} alt=""/>:<span aria-hidden="true">{String(index+1).padStart(2,'0')}</span>}<small>{item.label}</small><small>{item.status}</small></button>)}</div>}
+    <figcaption>{view?.model?`${view.label} · ${view.model} · ${view.provider}`:'Garment concept / image generation'}<span>Reference-conditioned concepts. Hidden details, lettering, construction and fit need artisan review.</span></figcaption>
+    {(error||view?.error||loadError)&&<p role="alert" className="generation-error">{error||view?.error||loadError}</p>}
+    <div className="generation-actions collection-controls">{views.length>1&&<><button className="text-button" aria-label="Previous view" onClick={()=>choose(selected-1)}><ArrowLeft size={15}/></button><button className="text-button" aria-label="Next view" onClick={()=>choose(selected+1)}><ArrowRight size={15}/></button></>}{image&&<><button className="text-button" onClick={()=>setFullscreen(true)}>Fullscreen <Maximize2 size={13}/></button><a className="text-button" href={mediaURL(view.mediaId,true)} download>Download view</a></>}{pending?<button className="text-button" onClick={onCancel}>Cancel remaining views</button>:!readOnly&&view&&!(view.id==='hero'&&view.status==='ready')&&<button disabled={view.status==='processing'} className="text-button" onClick={()=>onRetry(view.id)}>{view.status==='ready'?'Regenerate this view':'Generate this view'}</button>}</div>
+    {fullscreen&&<DialogFrame label={`${view.label} fullscreen`} onClose={()=>setFullscreen(false)}><div className="collection-fullscreen"><button className="text-button" aria-label="Close fullscreen" onClick={()=>setFullscreen(false)}><X size={20}/></button><img src={image} alt={`${view.label} — AI garment concept`}/><p>{view.label} · Concept only</p></div></DialogFrame>}
+  </figure>;
+}

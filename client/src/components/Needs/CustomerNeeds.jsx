@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Mic, Image as ImageIcon, PenTool, Scissors, ArrowUpRight } from 'lucide-react';
 import BodyMeasurementsPanel from '../Measurements/BodyMeasurementsPanel';
 import MeasurementSummary from '../Measurements/MeasurementSummary';
@@ -8,14 +8,15 @@ import VoiceRecorder from '../Studio/VoiceRecorder';
 import SketchPad from '../Studio/SketchPad';
 import ScrollScene, { ScrollType } from '../Motion/ScrollScene.jsx';
 import useReducedMotion from '../Measurements/useReducedMotion.js';
-import { fetchImageCapabilities, generateImagePreview } from '../../services/api';
+import { fetchImageCapabilities, createDesign, generateDesignView, fetchDesign, fetchDesigns, mediaURL } from '../../services/api';
 import { buildGarmentBrief } from './garmentBrief.js';
 import { prepareReferenceFile } from './referenceImage.js';
 import { playClickSound, playLoomSwoosh, playSuccessChime } from '../../utils/audioEffects';
 import './garment-generation.css';
+import FashionCollection from './FashionCollection';
 const InteractiveCloth3D = lazy(() => import('../Three/InteractiveCloth3D.jsx'));
 
-export default function CustomerNeeds({ onProceedToArtisanMatching, initialPrompt = '', measurementDraft, onMeasurementChange, draftStorageWarning }) {
+export default function CustomerNeeds({ onProceedToArtisanMatching, initialPrompt = '', measurementDraft, onMeasurementChange, draftStorageWarning, onPromptChange, assistantPrompt, assistantAction }) {
   const reduced = useReducedMotion();
   const [inputMode, setInputMode] = useState('text');
   const [promptText, setPromptText] = useState(initialPrompt || '');
@@ -24,7 +25,11 @@ export default function CustomerNeeds({ onProceedToArtisanMatching, initialPromp
   const [isReadingReference, setIsReadingReference] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [structuredRequest, setStructuredRequest] = useState(null);
-  const [generated, setGenerated] = useState(null);
+  const [collection, setCollection] = useState(null);
+  const [imageCount,setImageCount] = useState(5);
+  const [savedDesigns,setSavedDesigns] = useState(null);
+  const [savedError,setSavedError] = useState('');
+  const generated = collection?.views[0]?.mediaId ? {mediaId:collection.views[0].mediaId} : null;
   const [generationError, setGenerationError] = useState('');
   const [capabilities, setCapabilities] = useState(null);
   const [seed, setSeed] = useState('');
@@ -57,26 +62,50 @@ export default function CustomerNeeds({ onProceedToArtisanMatching, initialPromp
     catch (error) { if (read === referenceRead.current) setReferenceError(error.message); }
     finally { if (read === referenceRead.current) setIsReadingReference(false); }
   };
-  const generate = async (brief, image = activeConditioning.current) => {
+  useEffect(()=>{onPromptChange?.(promptText)},[promptText,onPromptChange]);
+  useEffect(()=>{if(assistantPrompt?.text!==undefined){setPromptText(assistantPrompt.text);setStructuredRequest(null);}},[assistantPrompt]);
+  useEffect(()=>{
+    if(!assistantAction)return;
+    if(assistantAction.type==='saved')fetchDesigns().then(setSavedDesigns).catch(e=>setSavedError(e.message));
+    if(assistantAction.type==='measurements'){setStructuredRequest(null);setTimeout(()=>document.querySelector('.body-measurements')?.scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'}),50);}
+  },[assistantAction,reduced]);
+  const updateView = view => setCollection(current=>current?{...current,views:current.views.map(v=>v.id===view.id?view:v)}:current);
+  const generate = async (brief, image = activeConditioning.current, viewId = null) => {
     request.current?.abort();
     const controller = new AbortController(); request.current = controller;
     setIsProcessing(true); setGenerationError('');
+    let design=collection;
     try {
-      // Only the garment brief and optional reference/seed reach the image API.
-      // Measurement values remain in the local order specification.
-      const result = await generateImagePreview({ prompt: brief.userPrompt, ...(image ? { imageDataUrl: image } : {}), ...(seed !== '' ? { seed: Number(seed) } : {}) }, { signal: controller.signal });
-      if (!controller.signal.aborted) { setGenerated(result); playSuccessChime(); }
+      if(!viewId){design=await createDesign({prompt:brief.userPrompt,specification:{title:brief.title,garments:brief.garments,style:brief.style,fit:brief.fit,occasion:brief.occasion},count:imageCount,...(image?{imageDataUrl:image}:{}),...(seed!==''?{seed:Number(seed)}:{})},{signal:controller.signal});if(controller.signal.aborted)return;setCollection(design);}
+      const remaining=viewId?design.views.filter(v=>v.id===viewId):design.views;
+      for(const view of remaining){
+        if(controller.signal.aborted)break;
+        updateView({...view,status:'processing'});
+        try{const result=await generateDesignView(design.id,view.id,{signal:controller.signal});if(!controller.signal.aborted){updateView(result);playSuccessChime();}}
+        catch(error){if(controller.signal.aborted)break;updateView({...view,status:view.mediaId?'ready':'failed',error:error.message});if(view.id==='hero')throw error;}
+      }
     } catch (error) { if (!controller.signal.aborted) setGenerationError(error.message); }
-    finally { if (request.current === controller) { request.current = null; setIsProcessing(false); } }
+    finally { if (request.current === controller) { request.current = null; setIsProcessing(false); if(design?.id)fetchDesign(design.id).then(setCollection).catch(()=>{}); } }
   };
-  const createBrief = () => {
+  const syncId=collection?.id;
+  const needsSync=collection?.views.some(v=>v.status==='processing') && !isProcessing;
+  useEffect(()=>{if(!syncId||!needsSync)return;const controller=new AbortController();const timer=setInterval(()=>fetchDesign(syncId,{signal:controller.signal}).then(setCollection).catch(()=>{}),1500);return()=>{controller.abort();clearInterval(timer)};},[syncId,needsSync]);
+  const openSaved=async id=>{
+    request.current?.abort();setIsProcessing(false);setSavedError('');
+    try{const design=await fetchDesign(id);const measurements=serializeMeasurements(measurementDraft);setCollection(design);setPromptText(design.prompt);setStructuredRequest(buildGarmentBrief(design.prompt,measurements,garmentLengthRequirement(measurements),'text'));setSavedDesigns(null);setGenerationError('');}catch(e){setSavedError(e.message)}
+  };
+  const createBrief = async () => {
     if (!promptText.trim() || promptText.length > 6000 || hasMeasurementErrors || isReadingReference || referenceError) return;
     const measurements = serializeMeasurements(measurementDraft);
     const brief = buildGarmentBrief(promptText.trim(), measurements, garmentLengthRequirement(measurements), inputMode);
-    const conditioning = refineFromImage ? generated?.imageDataUrl : reference?.dataUrl;
+    let conditioning = reference?.dataUrl;
+    if(refineFromImage && generated?.mediaId){
+      try{const response=await fetch(mediaURL(generated.mediaId));if(!response.ok)throw new Error('Saved reference unavailable');const blob=await response.blob();conditioning=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});}
+      catch{setReferenceError('The last generated image could not be used as a reference.');return;}
+    }
     activeConditioning.current = conditioning;
     setRefineFromImage(false);
-    setStructuredRequest(brief); setGenerated(null); playLoomSwoosh();
+    setStructuredRequest(brief); setCollection(null); playLoomSwoosh();
     generate(brief, conditioning);
   };
   const cancel = () => { request.current?.abort(); setIsProcessing(false); setGenerationError('Generation cancelled. Your design brief is still available.'); };
@@ -86,6 +115,9 @@ export default function CustomerNeeds({ onProceedToArtisanMatching, initialPromp
   return <section className="product-page studio-page">
     <div className="page-container">
       <header className="page-heading"><div><span className="eyebrow">02 / The design studio</span><h1><ScrollType>A thread of <em>an idea.</em></ScrollType></h1></div><p>Tell us what you want to wear.<br/>We'll find the hands to bring it to life.</p></header>
+      <button className="text-button" onClick={()=>fetchDesigns().then(setSavedDesigns).catch(e=>setSavedError(e.message))}>Open saved designs</button>
+      {savedError&&<p role="alert" className="generation-error">{savedError}</p>}
+      {savedDesigns&&<section className="saved-designs" aria-label="Saved designs"><h3>Your saved designs</h3><button className="text-button" onClick={()=>setSavedDesigns(null)}>Close saved designs</button>{savedDesigns.length?savedDesigns.map(d=><button key={d.id} onClick={()=>openSaved(d.id)}>{d.prompt.slice(0,140)}</button>):<p>No saved designs yet.</p>}</section>}
       {!structuredRequest && <div className="studio-layout">
         <motion.section className="studio-workspace" initial={{ opacity: reduced ? 1 : .3, x: reduced ? 0 : -32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .08 }} transition={{ duration: reduced ? 0 : .7 }} aria-label="Design brief" data-motion-scene="studio-workspace">
           <div className="studio-tools" aria-label="Input method">
@@ -103,6 +135,7 @@ export default function CustomerNeeds({ onProceedToArtisanMatching, initialPromp
           {capabilities?.supportsSeed && <label className="generation-seed">Seed (optional)<input type="number" min="0" max="2147483647" step="1" value={seed} onChange={event=>setSeed(event.target.value)}/></label>}
           {generated && capabilities?.supportsReference && <label className="refine-image-choice"><input type="checkbox" checked={refineFromImage} onChange={event=>setRefineFromImage(event.target.checked)}/>Use the last generated image as the reference for this refinement</label>}
           {capabilities && !capabilities.configured && <p className="generation-service-note">Image generation is currently unavailable. You can still create your brief and find an artisan.</p>}
+          <label className="collection-count">Images in this collection<select value={imageCount} onChange={e=>setImageCount(Number(e.target.value))}>{[1,2,3,4,5,6].map(n=><option key={n} value={n}>{n}{n===5?' · Recommended':''}</option>)}</select><span>Fewer images use fewer inference credits.</span></label>
           <BodyMeasurementsPanel draft={measurementDraft} onChange={onMeasurementChange} garment={promptText} draftStorageWarning={draftStorageWarning}/>
           <div className="studio-action"><p>Your prompt and attached reference are sent to the configured image service. Body measurements stay in your tailoring brief.</p><motion.button className="primary-button" whileHover={reduced ? undefined : { y:-3 }} whileTap={reduced ? undefined : { scale:.98 }} disabled={!promptText.trim() || hasMeasurementErrors || isReadingReference || !!referenceError} onClick={createBrief}>Create my design brief <ArrowUpRight size={17}/></motion.button></div>
         </motion.section>
@@ -114,23 +147,14 @@ export default function CustomerNeeds({ onProceedToArtisanMatching, initialPromp
       </div>}
       {structuredRequest && <motion.section className="design-sheet" initial={{ opacity: reduced ? 1 : .3, y: reduced ? 0 : 32 }} animate={{ opacity:1, y:0 }} transition={{ duration: reduced ? 0 : .7 }} aria-label="Your design specification">
         <header className="design-sheet-heading"><div><span className="eyebrow">ThreadLabs / Design specification / 01</span><h3>{structuredRequest.title}</h3></div><button className="text-button" onClick={refine}>Refine the brief <PenTool size={14}/></button></header>
-        <ScrollScene as="figure" name="generated-fashion-board" treatment="board" className="generated-fashion-board">
-          <motion.div className="generated-image-mask" layout transition={{ layout: { duration: reduced ? 0 : .55 } }}>
-            <AnimatePresence mode="wait">
-              {generated ? <motion.img key="image" initial={{opacity:0}} animate={{opacity:1}} transition={{duration:reduced ? 0 : .6}} src={generated.imageDataUrl} alt={`AI garment concept for: ${structuredRequest.userPrompt}`} onError={()=>{setGenerated(null);setGenerationError('The generated image could not be displayed. Please try again.');}}/> : <motion.div key="status" className="garment-image-status" initial={{opacity:0}} animate={{opacity:1}} role={isProcessing ? 'status' : undefined} aria-live="polite"><span className="eyebrow">{isProcessing ? 'Generating your garment image' : 'Your garment image'}</span><h4>{isProcessing ? 'Your idea, taking shape.' : 'Ready when the image service is.'}</h4>{isProcessing && <svg className="processing-thread" viewBox="0 0 500 80" aria-hidden="true"><path d="M0 55 C100 5 150 95 250 40 S400 5 500 55" fill="none" stroke="currentColor" strokeWidth="1"/></svg>}<p>{isProcessing ? 'The image service is working from your original brief. This may take up to two minutes.' : 'No generated image is available yet. Your original brief and tailoring details remain below.'}</p></motion.div>}
-            </AnimatePresence>
-          </motion.div>
-          <figcaption>{generated ? `AI-generated garment concept · ${generated.model} · ${generated.provider}` : 'Garment concept / image generation'}<span>Visual interpretation only. Confirm construction and fit with your artisan.</span></figcaption>
-          {isProcessing && generated && <p role="status" className="generation-service-note">Generating another interpretation from your original brief…</p>}
-          {generationError && <p role="alert" className="generation-error">{generationError}</p>}
-          <div className="generation-actions">{isProcessing ? <button className="text-button" onClick={cancel}>Cancel generation</button> : <button className="text-button" onClick={()=>generate(structuredRequest)}>{generated ? 'Generate another interpretation' : 'Try image generation again'} <ArrowUpRight size={14}/></button>}</div>
-        </ScrollScene>
+        <FashionCollection collection={collection} pending={isProcessing} error={generationError} onRetry={viewId=>generate(structuredRequest,null,viewId)} onCancel={cancel}/>
+        {!isProcessing && !collection && <button className="text-button" onClick={()=>generate(structuredRequest)}>Try collection generation again</button>}
         <div className="design-sheet-grid">
           <aside className="design-brief"><span className="eyebrow">The original idea</span><blockquote>“{structuredRequest.userPrompt}”</blockquote><span className="eyebrow">Colors mentioned in your brief</span>{structuredRequest.colorPalette.length ? <div className="design-swatches">{structuredRequest.colorPalette.map((color,index)=><div key={color} className="design-swatch" style={{backgroundColor:color}} title={structuredRequest.colourTerms[index]}/>)}</div> : <p className="muted">Not specified</p>}<span className="eyebrow">Garment length</span><p className="muted">{structuredRequest.lengthRequirement || 'Discuss with artisan'}</p>{reference && <img src={reference.dataUrl} alt={reference.description}/>}</aside>
           <div><div>{structuredRequest.garments.map((garment,index)=><article key={index} className="garment-spec"><span className="eyebrow">Garment / 0{index+1}</span><h4>{garment.name}</h4><dl><div className="spec-pair"><dt>Fabric</dt><dd>{garment.fabric}</dd></div><div className="spec-pair"><dt>Color</dt><dd>{garment.color}</dd></div></dl></article>)}</div><div className="design-parameters">{[['Direction',structuredRequest.style],['Fit & silhouette',structuredRequest.fit],['Occasion',structuredRequest.occasion],['Estimated range',structuredRequest.estimatedCost],['Lead time',structuredRequest.estimatedDays]].map(([label,value])=><div key={label}><span className="eyebrow">{label}</span><p>{value}</p></div>)}</div><p className="brief-integrity-note">These local labels only index words in your brief. The complete original request, including every detail and placement, is sent to the image service and your artisan.</p></div>
         </div>
         <MeasurementSummary measurements={structuredRequest.measurements} open/>
-        <footer className="design-sheet-footer"><p>Your vision, ready for a skilled pair of hands.<br/><small>Confirm materials, price and lead time with your artisan. Image generation is optional.</small></p><button className="primary-button" onClick={()=>{playLoomSwoosh();onProceedToArtisanMatching(structuredRequest);}}>Find your artisan <ArrowUpRight size={17}/></button></footer>
+        <footer className="design-sheet-footer"><p>Your vision, ready for a skilled pair of hands.<br/><small>Confirm materials, price and lead time with your artisan. Image generation is optional.</small></p><button className="primary-button" onClick={()=>{playLoomSwoosh();onProceedToArtisanMatching({...structuredRequest,...(collection?.id?{designId:collection.id}:{})});}}>Find your artisan <ArrowUpRight size={17}/></button></footer>
       </motion.section>}
       <footer className="product-footer"><span>THREADLABS — YOUR PERSONAL ATELIER</span><span>From imagination to heirloom.</span></footer>
     </div>

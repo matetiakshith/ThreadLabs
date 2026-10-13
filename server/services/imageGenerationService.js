@@ -58,7 +58,7 @@ export function validateImageRequest(body = {}) {
   if (body.seed !== undefined && (!Number.isSafeInteger(body.seed) || body.seed < 0 || body.seed > 2147483647)) fail(400, 'INVALID_SEED', 'Use a whole-number seed between 0 and 2147483647.');
   // Deliberately whitelist fields: body measurements, customer identifiers and
   // arbitrary provider parameters never leave this server in an image request.
-  return { prompt: body.prompt.trim(), imageDataUrl: image, seed: body.seed };
+  return { prompt: body.prompt.trim(), imageDataUrl: image, seed: body.seed, presentation: ['hero','front','back','side','detail','styling'].includes(body.presentation) ? body.presentation : null };
 }
 
 export async function decodeImage(dataUrl) {
@@ -73,8 +73,8 @@ export async function decodeImage(dataUrl) {
   }
 }
 
-export function garmentImagePrompt(prompt, hasReference = false) {
-  return `Create a garment design presentation from the following exact customer brief. Preserve every stated garment, colour, material, fit, texture, print, embroidery, distressing and placement. Do not substitute a different style or invent additional garments. Show front and back views side by side when a back detail is requested; otherwise show the whole garment clearly. Use neutral studio lighting so construction and fabric remain legible. ${hasReference ? 'Use the supplied image as a direct visual reference, retaining its silhouette and details except where the brief requests changes.' : ''}\n\nCUSTOMER BRIEF (authoritative):\n${prompt}\n\nThis is a visual concept, not a body-sizing simulation.`;
+export function garmentImagePrompt(prompt, hasReference = false, presentation = null) {
+  return `Create a garment design presentation from the following exact customer brief. Preserve every stated garment, colour, material, fit, texture, print, embroidery, distressing and placement. Do not substitute a different style or invent additional garments. ${presentation ? `Show ONLY the ${presentation === 'detail' ? 'fabric and embroidery close-up' : presentation} view requested; no collage or side-by-side views. Preserve the same garment identity from the master reference. Infer unseen surfaces conservatively from the exact brief.` : 'Show front and back views side by side when a back detail is requested; otherwise show the whole garment clearly.'} Use neutral studio lighting so construction and fabric remain legible. ${hasReference ? 'Use the supplied image as a direct visual reference, retaining its silhouette and details except where the brief requests changes.' : ''}\n\nCUSTOMER BRIEF (authoritative):\n${prompt}\n\nThis is a visual concept, not a body-sizing simulation.`;
 }
 
 function endpointURL(env) {
@@ -93,7 +93,7 @@ async function generateDedicatedImage(body, { env = process.env, fetchImpl = fet
   if (request.seed !== undefined && !config.supportsSeed) fail(422, 'SEED_UNSUPPORTED', 'This deployment does not support a seed. Remove the seed to continue.');
   const endpoint = endpointURL(env);
   if (request.imageDataUrl) request.imageDataUrl = await decodeImage(request.imageDataUrl);
-  const prompt = garmentImagePrompt(request.prompt, !!request.imageDataUrl);
+  const prompt = garmentImagePrompt(request.prompt, !!request.imageDataUrl, request.presentation);
   const payload = { inputs: request.imageDataUrl ? { prompt, image: request.imageDataUrl } : prompt };
   if (request.seed !== undefined) payload.parameters = { seed: request.seed };
   const timeout = AbortSignal.timeout(timeoutMs);
@@ -152,7 +152,7 @@ export async function generateGarmentImage(body, { env = process.env, fetchImpl 
   const timeout = AbortSignal.timeout(timeoutMs);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   try {
-    const prompt = garmentImagePrompt(request.prompt, !!request.imageDataUrl);
+    const prompt = garmentImagePrompt(request.prompt, !!request.imageDataUrl, request.presentation);
     const parameters = request.seed !== undefined ? { seed: request.seed } : {};
     const options = { signal: combined, fetch: fetchImpl, retry_on_error: false };
     let image, model, provider, imageDataUrl;

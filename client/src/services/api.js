@@ -142,3 +142,25 @@ export async function fetchHeritageCrafts() {
   if (!res.ok) throw new Error('Failed to fetch heritage crafts');
   return await res.json();
 }
+
+export const registerAccount = body => accountRequest('/auth/register', {method:'POST',body});
+export const forgotPassword = identity => accountRequest('/auth/forgot-password',{method:'POST',body:{identity}});
+export const resetPassword = body => accountRequest('/auth/reset-password',{method:'POST',body});
+export const fetchProfile = () => accountRequest('/profile/me');
+export const saveProfile = body => accountRequest('/profile/me',{method:'PATCH',body});
+export const addPortfolio = body => accountRequest('/profile/portfolio',{method:'POST',body});
+export const editPortfolio = (id,body) => accountRequest(`/profile/portfolio/${encodeURIComponent(id)}`,{method:'PATCH',body});
+export const removePortfolio = id => accountRequest(`/profile/portfolio/${encodeURIComponent(id)}`,{method:'DELETE'});
+export const mediaURL = (id,download=false) => `${API_BASE}/media/${encodeURIComponent(id)}${download?'?download=1':''}`;
+export const fetchDesigns = options => accountRequest('/designs',options);
+export const fetchDesign = (id,options) => accountRequest(`/designs/${encodeURIComponent(id)}`,options);
+export const createDesign = (body,options={}) => accountRequest('/designs',{method:'POST',body,...options});
+export const generateDesignView = (id,viewId,options={}) => accountRequest(`/designs/${encodeURIComponent(id)}/views/${encodeURIComponent(viewId)}`,{method:'POST',body:{},...options});
+export const askBeatle = (body,options={}) => accountRequest('/beatle/reply',{method:'POST',body,...options});
+export const fetchBeatleCapabilities = () => accountRequest('/beatle/capabilities');
+export const fetchConversation = () => accountRequest('/beatle/conversation');
+export const clearConversation = () => accountRequest('/beatle/conversation',{method:'DELETE'});
+
+export const fetchRegisteredArtisans = options => accountRequest('/artisan-directory', options);
+
+export const fetchAssignedDesign = (id,options) => accountRequest(`/commissions/${encodeURIComponent(id)}/design`,options);

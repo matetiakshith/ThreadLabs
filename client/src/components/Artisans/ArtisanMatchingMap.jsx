@@ -1,10 +1,11 @@
 import MeasurementSummary from '../Measurements/MeasurementSummary';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Compass, CheckCircle, ArrowRight, X } from 'lucide-react';
 import { playClickSound, playSuccessChime } from '../../utils/audioEffects';
 import IndiaArtisanMap from './IndiaArtisanMap';
 import DialogFrame from '../ui/DialogFrame';
+import { fetchRegisteredArtisans } from '../../services/api';
 import statewideProfiles from '../../data/artisans.json';
 
 
@@ -20,6 +21,8 @@ export default function ArtisanMatchingMap({
   onConfirmOrder,
   onBackToNeeds,
 }) {
+  const [registeredArtisans,setRegisteredArtisans]=useState([]);
+  useEffect(()=>{const controller=new AbortController();fetchRegisteredArtisans({signal:controller.signal}).then(setRegisteredArtisans).catch(()=>{});return()=>controller.abort();},[]);
   const [selectedArtisan, setSelectedArtisan] = useState(null);
   const [activeProfileModal, setActiveProfileModal] = useState(null);
   const [confirmationOrder, setConfirmationOrder] = useState(null);
@@ -126,7 +129,7 @@ export default function ArtisanMatchingMap({
 
   const priorRating = 4.6;
   const priorVotes = 20;
-  const artisanDirectory = [...statewideProfiles, ...nearbyArtisans];
+  const artisanDirectory = [...statewideProfiles, ...registeredArtisans, ...nearbyArtisans];
   const rankedArtisans = nearbyArtisans.map((artisan) => ({
     ...artisan,
     trustScore: (artisan.rating * artisan.reviewsCount + priorRating * priorVotes) / (artisan.reviewsCount + priorVotes),
@@ -143,9 +146,9 @@ export default function ArtisanMatchingMap({
 
   const handleSelectArtisanForOrder = (artisan) => {
     playClickSound();
-    const baseCost = Number(artisan.priceRange.split('–')[0].replace(/[^0-9]/g, '')) || 1100;
-    const deliveryFee = Math.round((45 + artisan.distanceKm * 15) / 10) * 10;
-    const deliveryEtaMinutes = Math.max(8, Math.round(8 + artisan.distanceKm * 2));
+    const baseCost = artisan.registered ? 0 : Number(artisan.priceRange.split('–')[0].replace(/[^0-9]/g, '')) || 1100;
+    const deliveryFee = artisan.registered ? 0 : Math.round((45 + artisan.distanceKm * 15) / 10) * 10;
+    const deliveryEtaMinutes = artisan.registered ? 0 : Math.max(8, Math.round(8 + artisan.distanceKm * 2));
     setDeliveryMode('pickup');
     setConfirmationOrder({
       artisan,
@@ -154,7 +157,7 @@ export default function ArtisanMatchingMap({
       deliveryFee,
       deliveryEtaMinutes,
       days: artisan.estimatedDays,
-      distance: `${artisan.distanceKm} km away`,
+      distance: artisan.registered?'Location shared by studio':`${artisan.distanceKm} km away`,
     });
   };
 
@@ -279,8 +282,8 @@ export default function ArtisanMatchingMap({
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted mt-1">
-                          <span className="text-rose font-bold">{artisan.distanceKm} km away</span>
-                          <span>★ {artisan.rating} ({artisan.reviewsCount} reviews)</span><span className="text-forest">Adjusted ★ {artisan.trustScore.toFixed(2)}</span>
+                          <span className="text-rose font-bold">{artisan.registered?'Location shared by studio':`${artisan.distanceKm} km away`}</span>
+                          <span>{artisan.registered?'New studio · Unverified':`★ ${artisan.rating} (${artisan.reviewsCount} reviews)`}</span>{!artisan.registered&&<span className="text-forest">Adjusted ★ {artisan.trustScore.toFixed(2)}</span>}
                         </div>
                       </div>
                     </div>
@@ -442,20 +445,20 @@ export default function ArtisanMatchingMap({
                   className={`rounded-sm border p-3 text-left transition-colors ${deliveryMode === 'delivery' ? 'border-line bg-ink text-surface' : 'border-line text-muted'}`}
                 >
                   <span className="block font-bold">Doorstep delivery</span>
-                  <span className="mt-1 block text-[10px]">+₹{confirmationOrder.deliveryFee} · ~{confirmationOrder.deliveryEtaMinutes} min</span>
+                  <span className="mt-1 block text-[10px]">{confirmationOrder.artisan.registered?'Confirm delivery with artisan':`+₹${confirmationOrder.deliveryFee} · ~${confirmationOrder.deliveryEtaMinutes} min`}</span>
                 </button>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">TAILORING:</span>
-                <span className="text-ink font-bold">₹{confirmationOrder.baseCost.toLocaleString('en-IN')}</span>
+                <span className="text-ink font-bold">{confirmationOrder.artisan.registered?'Confirm with artisan':`₹${confirmationOrder.baseCost.toLocaleString('en-IN')}`}</span>
               </div>
               <div className="flex justify-between gap-5 border-b border-line pb-2">
                 <span className="text-muted">DELIVERY:</span>
-                <span className="text-ink font-bold">{deliveryMode === 'delivery' ? `₹${confirmationOrder.deliveryFee}` : '₹0'}</span>
+                <span className="text-ink font-bold">{confirmationOrder.artisan.registered?'Confirm with artisan':deliveryMode === 'delivery' ? `₹${confirmationOrder.deliveryFee}` : '₹0'}</span>
               </div>
               <div className="flex justify-between gap-5 border-b border-line pb-2">
                 <span className="text-muted">TOTAL:</span>
-                <span className="text-forest font-bold">₹{(confirmationOrder.baseCost + (deliveryMode === 'delivery' ? confirmationOrder.deliveryFee : 0)).toLocaleString('en-IN')}</span>
+                <span className="text-forest font-bold">{confirmationOrder.artisan.registered?'Confirm with artisan':`₹${(confirmationOrder.baseCost + (deliveryMode === 'delivery' ? confirmationOrder.deliveryFee : 0)).toLocaleString('en-IN')}`}</span>
               </div>
               <div className="flex justify-between gap-5 border-b border-line pb-2">
                 <span className="text-muted">ESTIMATED COMPLETION:</span>

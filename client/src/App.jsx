@@ -9,6 +9,7 @@ import CustomerOrderTracker from './components/Orders/CustomerOrderTracker';
 import CustomFashionCursor from './components/Unseen/CustomFashionCursor';
 import RequestInbox from './components/ArtisanPortal/RequestInbox';
 import LoginPage from './components/LoginPage';
+import BeatleAssistant from './components/Beatle/BeatleAssistant';
 import AtelierMotion from './components/Motion/AtelierMotion.jsx';
 import { createMeasurementDraft, loadMeasurementDraft, measurementDraftKey, serializeMeasurements, validateMeasurements, garmentLengthRequirement } from './components/Measurements/measurements';
 import { demoRequests } from './data/demoRequests';
@@ -24,6 +25,12 @@ import { fetchSession, fetchCommissions, submitCommission, changeCommissionStage
  * 4. ORDER TRACKING (Amazon-Style Live Garment Production Stages)
  */
 function Application() {
+  const demo=import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE==='true';
+  const [currentPrompt,setCurrentPrompt]=useState('');
+  const [assistantPrompt,setAssistantPrompt]=useState(null);
+  const [assistantAction,setAssistantAction]=useState(null);
+  const [draftBio,setDraftBio]=useState(null);
+  const [selectedCommission,setSelectedCommission]=useState(null);
   const motionRoot = useRef(null);
   const [measurementDraft, setMeasurementDraft] = useState(() => { try { return loadMeasurementDraft(sessionStorage); } catch { return createMeasurementDraft(); } });
   const [draftStorageWarning, setDraftStorageWarning] = useState(false);
@@ -38,15 +45,15 @@ function Application() {
   const measurementErrors = validateMeasurements(measurementDraft);
   const hasMeasurementErrors = Object.keys(measurementErrors).length > 0;
   const measurements = hasMeasurementErrors ? null : serializeMeasurements(measurementDraft);
-  const [activeTab, setActiveTab] = useState('mall');
+  const [activeTab, setActiveTab] = useState(()=>new URLSearchParams(location.search).has('reset')?'login':'mall');
   const [userRole, setUserRole] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
 
   // Cross-Step State
   const [customerRequirement, setCustomerRequirement] = useState(null);
   const [requests, setRequests] = useState(() => {
-    const samples = import.meta.env.DEV ? demoRequests : [];
-    if (!import.meta.env.DEV) return [];
+    const samples = demo ? demoRequests : [];
+    if (!demo) return [];
     try {
       const saved = JSON.parse(localStorage.getItem('threadlabsRequests') || '[]');
       const savedById = new Map(saved.map((request) => [request.orderId, request]));
@@ -54,17 +61,17 @@ function Application() {
       return [...samples.map((request) => savedById.get(request.orderId) || request), ...saved.filter((request) => !demoIds.has(request.orderId))];
     } catch { return samples; }
   });
-  const [activeOrder, setActiveOrder] = useState(() => { if (!import.meta.env.DEV) return null; try { return JSON.parse(localStorage.getItem('threadlabsActiveOrder') || 'null'); } catch { return null; } });
+  const [activeOrder, setActiveOrder] = useState(() => { if (!demo) return null; try { return JSON.parse(localStorage.getItem('threadlabsActiveOrder') || 'null'); } catch { return null; } });
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
-    if (import.meta.env.DEV) return;
+    if (demo) return;
     let cancelled = false;
     fetchSession().then(({user}) => { if (!cancelled) setUserRole(user); }).catch(() => {});
     return () => { cancelled = true; };
-  }, []);
+  }, [demo]);
   useEffect(() => {
-    if (import.meta.env.DEV || !userRole?.id) return;
+    if (demo || !userRole?.id) return;
     const controller = new AbortController();
     const refresh = () => fetchCommissions({ signal: controller.signal }).then(items => {
       if (controller.signal.aborted) return;
@@ -74,13 +81,13 @@ function Application() {
     refresh();
     const timer = setInterval(refresh, 30000);
     return () => { controller.abort(); clearInterval(timer); };
-  }, [userRole?.id]);
+  }, [userRole?.id,demo]);
 
   const switchWorkspace = async () => {
-    if (!import.meta.env.DEV) {
+    if (!demo) {
       try { await signOut(); } catch (error) { showToast(error.message); return; }
       setUserRole(null); setRequests([]); setActiveOrder(null); setMeasurementDraft(createMeasurementDraft());
-      setCustomerRequirement(null);
+      setCustomerRequirement(null);setCurrentPrompt('');setAssistantPrompt(null);setDraftBio(null);setAssistantAction(null);setSelectedCommission(null);
     }
     setActiveTab('login');
   };
@@ -101,13 +108,13 @@ function Application() {
     playLoomSwoosh();
     setCustomerRequirement(structuredReq);
     setActiveTab('matching');
-    showToast(import.meta.env.DEV ? '✓ AI Matched Nearby Tailors & Artisans!' : 'Choose a region to find an artisan for your brief.');
+    showToast(demo ? '✓ AI Matched Nearby Tailors & Artisans!' : 'Choose a region to find an artisan for your brief.');
   };
 
   // Step 3 -> Step 4 Handover: From Artisan Selection to Live Order Tracking
   const handleConfirmOrder = async (orderData) => {
     if (hasMeasurementErrors) return;
-    if (!import.meta.env.DEV) {
+    if (!demo) {
       try {
         const request = await submitCommission({ ...orderData, measurements });
         setRequests(current => [request, ...current.filter(item => item.orderId !== request.orderId)]);
@@ -128,7 +135,7 @@ function Application() {
   };
 
   const acceptRequest = async (orderId) => {
-    if (!import.meta.env.DEV) return updateRequestStage(orderId, 1, 'Artisan Accepted');
+    if (!demo) return updateRequestStage(orderId, 1, 'Artisan Accepted');
     const accepted = requests.find((request) => request.orderId === orderId);
     if (!accepted) return;
     const nextRequests = requests.map((request) => request.orderId === orderId ? { ...request, status: 'Artisan Accepted', currentStageIndex: Math.max(1, request.currentStageIndex || 0) } : request);
@@ -140,7 +147,7 @@ function Application() {
   };
 
   const updateRequestStage = async (orderId, stageIndex, status) => {
-    if (!import.meta.env.DEV) {
+    if (!demo) {
       try {
         const request = await changeCommissionStage(orderId, { stageIndex: Math.max(0, stageIndex), status });
         setRequests(current => current.map(item => item.orderId === orderId ? request : item));
@@ -173,7 +180,7 @@ function Application() {
         }}
         isMuted={isMuted}
         onToggleSound={handleToggleSound}
-        onSignOut={!import.meta.env.DEV && userRole?.id ? switchWorkspace : undefined}
+        onSignOut={!demo && userRole?.id ? switchWorkspace : undefined}
       />}
 
       {/* Main Experience Router */}
@@ -181,10 +188,10 @@ function Application() {
         
         {/* TAB 1: 3D SHOPPING MALL (IMPRESSIVE OPENING RUNWAY TOUR) */}
         {activeTab === 'mall' && (
-          <ThreadLabsLanding onEnterApp={() => setActiveTab(!import.meta.env.DEV && userRole?.id ? (userRole.role === 'artisan' ? 'artisan' : 'needs') : 'login')} isMuted={isMuted} onToggleSound={handleToggleSound} />
+          <ThreadLabsLanding onEnterApp={() => setActiveTab(!demo && userRole?.id ? (userRole.role === 'artisan' ? 'artisan' : 'needs') : 'login')} isMuted={isMuted} onToggleSound={handleToggleSound} />
         )}
 
-        {activeTab === 'login' && <LoginPage onBack={()=>setActiveTab('mall')} onLogin={(role, identity, artisanId, account)=>{setUserRole(account || {role,identity,artisanId}); if (!import.meta.env.DEV) { setRequests([]); setActiveOrder(null); setCustomerRequirement(null); setMeasurementDraft(createMeasurementDraft()); } setActiveTab(role==='customer'?'needs':'artisan')}} />}
+        {activeTab === 'login' && <LoginPage onBack={()=>setActiveTab('mall')} onLogin={(role, identity, artisanId, account)=>{setUserRole(account || {role,identity,artisanId}); if (!demo) { setRequests([]); setActiveOrder(null); setCustomerRequirement(null);setCurrentPrompt('');setAssistantPrompt(null);setDraftBio(null);setAssistantAction(null);setSelectedCommission(null); setMeasurementDraft(createMeasurementDraft()); } setActiveTab(role==='customer'?'needs':'artisan')}} />}
 
         {/* TAB 2: CUSTOMER NEEDS ("WHAT DO YOU NEED?") */}
         {activeTab === 'needs' && (
@@ -192,7 +199,8 @@ function Application() {
             measurementDraft={measurementDraft}
             draftStorageWarning={draftStorageWarning}
             onMeasurementChange={setMeasurementDraft}
-            initialPrompt={customerRequirement?.userPrompt || ''}
+            initialPrompt={currentPrompt || customerRequirement?.userPrompt || ''}
+            onPromptChange={setCurrentPrompt} assistantPrompt={assistantPrompt} assistantAction={assistantAction}
             onProceedToArtisanMatching={handleProceedToArtisanMatching}
           />
         )}
@@ -217,10 +225,13 @@ function Application() {
             }}
           />
         )}
-        {activeTab === 'artisan' && <RequestInbox artisanId={userRole?.artisanId} requests={requests.filter((request)=>!userRole?.artisanId || request.artisanId===userRole.artisanId)} onBack={switchWorkspace} onAccept={acceptRequest} onUpdateStage={updateRequestStage} />}
+        {activeTab === 'artisan' && <RequestInbox onSelectedCommission={setSelectedCommission} assistantAction={assistantAction} draftBio={draftBio} artisanId={userRole?.artisanId} requests={requests.filter((request)=>!userRole?.artisanId || request.artisanId===userRole.artisanId)} onBack={switchWorkspace} onAccept={acceptRequest} onUpdateStage={updateRequestStage} />}
 
       </main>
 
+      <BeatleAssistant key={userRole?.id||'guest'} user={userRole} page={activeTab} prompt={currentPrompt} commissionId={selectedCommission}
+        onAction={action=>{if(action==='login'||!userRole?.id){setActiveTab('login');return;}if(userRole.role==='artisan'){setAssistantAction({type:action});setActiveTab('artisan');return;}setAssistantAction({type:action});setActiveTab(['measurements','saved'].includes(action)?'needs':action);}}
+        onDraft={(kind,text)=>{if(kind==='prompt'&&userRole?.role==='customer'){setAssistantPrompt({text});setActiveTab('needs');}if(kind==='bio'&&userRole?.role==='artisan'){setDraftBio({text});setAssistantAction({type:'profile'});setActiveTab('artisan');}}}/>
       {/* Quick Toast Notification */}
       {notification && (
         <div role="status" className="app-toast">

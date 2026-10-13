@@ -34,7 +34,7 @@ test('real PostgreSQL schema and HTTP account/commission authorization', async t
   let customer,other,artisan,wrongArtisan,commission;
   try {
     await t.test('customers register securely; public artisan claims and originless writes fail',async()=>{
-      assert.equal((await call('/auth/register',{method:'POST',body:{identity:'bad',password,role:'artisan'}})).status,403);
+      assert.equal((await call('/auth/register',{method:'POST',body:{identity:'bad',password,role:'artisan'}})).status,400);
       assert.equal((await call('/auth/register',{method:'POST',body:{identity:'first',password,role:'customer'},omitOrigin:true})).status,403);
       customer=await call('/auth/register',{method:'POST',body:{identity:'first',password,role:'customer'}});
       other=await call('/auth/register',{method:'POST',body:{identity:'second',password,role:'customer'}});
