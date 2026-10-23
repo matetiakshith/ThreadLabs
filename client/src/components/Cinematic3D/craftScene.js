@@ -1,7 +1,6 @@
 import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { createHandRig } from './handRig';
 import { evaluateCamera, range, envelope, smoothstep } from './timeline';
 import { photographs } from './photography';
 
@@ -39,8 +38,6 @@ export function createCraftScene(canvas,invalidate) {
  const fill=new T.DirectionalLight('#dfe8e3',1.3);fill.position.set(2,-1,4);scene.add(fill);
  const objectRoot=new T.Group(), hoop=new T.Group(), wire=new T.Group();
  objectRoot.add(hoop,wire);scene.add(objectRoot);
- const hand=createHandRig({detail:window.innerWidth<700?'low':'high',color:'#352b27'});
- objectRoot.add(hand);hand.rotation.y=Math.PI;
  const woven=new T.Group();hoop.add(woven);
  const strandGeo=new T.CylinderGeometry(.0018,.0018,1,5,1),strandMat=new T.MeshStandardMaterial({color:'#dbcfb5',roughness:.94});
  const dummy=new T.Object3D();
@@ -142,7 +139,7 @@ export function createCraftScene(canvas,invalidate) {
   if(disposed)return;
   const begin=performance.now();
   const cp=evaluateCamera(t);camera.position.fromArray(cp.position);target.fromArray(cp.target);
-  // Portrait devices retain the entire hand and disk rather than clipping it.
+  // Portrait devices retain the complete material study.
   if(width/height<.8){camera.position.z*=1.4;cp.fov=42;}
   camera.fov=cp.fov;camera.lookAt(target);camera.updateProjectionMatrix();
   const paper=envelope(t,57.5,58.4,63.3,64);scene.background.copy(INK).lerp(PAPER,paper);
@@ -152,16 +149,11 @@ export function createCraftScene(canvas,invalidate) {
   objectRoot.visible=showHoop>.001;
   objectRoot.position.set(0,0,0);objectRoot.rotation.set(0,0,0);objectRoot.scale.setScalar(t<25&&width>=700?.72:1);
   hoop.rotation.set(0,0,0);hoop.position.set(0,0,0);hoop.scale.setScalar(1);
-  if(t<6.2){hoop.rotation.set(-.1,range(t,2,6.2)*Math.PI*2,-.08);}
-  if(t>=6.2&&t<16.3){const hold=envelope(t,7.6,8.2,14.7,15.6);objectRoot.rotation.set(.08*hold*Math.sin(t*.7),.19*hold*Math.sin(t*.55),.10*hold*Math.sin(t*.8));objectRoot.position.y=.12*hold*Math.sin(t*.6);}
-  const arrival=ease(t,6.2,7.5),release=ease(t,15,15.9),exit=ease(t,15.6,16.6),grip=ease(t,7.3,8.1)*(1-release);
-  hand.visible=t>=6.2&&t<16.65;
-  hand.position.set(-.288,-1.10-(1-arrival)*3-exit*3,-.654);
-  hand.setPose({grip,spread:(1-grip)*.45,wrist:0,curls:{index:mix(.12,1,grip)}});
+  if(t<6.2){const settle=1-ease(t,5.6,6.2);hoop.rotation.set(-.1*settle,range(t,2,6.2)*Math.PI*2,-.08*settle);}
   if(t>=15.5&&t<20.5){hoop.rotation.y=ease(t,15.5,17)*Math.PI*2;hoop.rotation.x=-ease(t,18.3,19.5)*.55;hoop.position.y=ease(t,18.5,20)*1.4;hoop.scale.setScalar(1-ease(t,19,20.5)*.85);}
-  if(t>=35&&t<42){hoop.rotation.x=mix(-.15,-Math.PI/2,ease(t,40.5,41.5));hoop.position.y=-.10;hoop.rotation.z=.2+ease(t,40.5,42)*.9;}
+  if(t>=35&&t<42){hoop.rotation.x=mix(-.15,-Math.PI/2,ease(t,40.5,41.5));hoop.position.y=mix(.72,-.10,ease(t,40.5,41.5));hoop.rotation.z=.2+ease(t,40.5,42)*.9;}
   const explode=envelope(t,41.5,43,44.6,45.5);
-  if(t>=41.5&&t<46){hoop.rotation.x=mix(-Math.PI/2,-.1,ease(t,41.5,43));hoop.rotation.y=.25*explode;hoop.rotation.z=mix(.2,1.1,ease(t,40.5,42))*(1-ease(t,42,43));}
+  if(t>=41.5&&t<46){hoop.position.y=mix(-.1,0,ease(t,41.5,43));hoop.rotation.x=mix(-Math.PI/2,-.1,ease(t,41.5,43));hoop.rotation.y=.25*explode;hoop.rotation.z=mix(.2,1.1,ease(t,40.5,42))*(1-ease(t,42,43));}
   for(let i=0;i<parts.length;i++){
    const {mesh,position,quaternion}=parts[i];mesh.position.copy(position);mesh.quaternion.copy(quaternion);
    const z=/outer/.test(mesh.name)?-.5:/inner/.test(mesh.name)?-.2:/linen/.test(mesh.name)?.15:/clamp/.test(mesh.name)?.45:1.0;
@@ -197,7 +189,6 @@ export function createCraftScene(canvas,invalidate) {
   void dt;
  };
  return {load,render,diagnostics:()=>{
-  const contacts=hand.getContactPoints();
-  return {drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,frameMs:lastFrameMs,assetsLoaded:loaded,handContactDistance:contacts.thumb.distanceTo(contacts.index),renderer:renderer.capabilities.isWebGL2?'webgl2':'webgl'};
- },dispose(){disposed=true;observer.disconnect();hand.dispose();resources.forEach(r=>r.dispose());renderer.dispose();}};
+  return {drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,frameMs:lastFrameMs,assetsLoaded:loaded,renderer:renderer.capabilities.isWebGL2?'webgl2':'webgl'};
+ },dispose(){disposed=true;observer.disconnect();resources.forEach(r=>r.dispose());renderer.dispose();}};
 }

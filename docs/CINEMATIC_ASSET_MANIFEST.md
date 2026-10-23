@@ -8,9 +8,9 @@ Total asset payload: 2112.5 KiB. JSON runtime manifest: `client/public/cinematic
 
 | Asset | Size | Bounds (x × y × z) | Purpose |
 |---|---:|---|---|
-| embroidery-hoop.glb | 179.7 KiB | 1.694 × 1.732 × 0.094 | Primary round craft object, hand grab, rotation, deconstruction and macro embroidery reveal. |
+| embroidery-hoop.glb | 179.7 KiB | 1.694 × 1.732 × 0.094 | Primary round craft object, rotation, deconstruction and macro embroidery reveal. |
 | thread-spool.glb | 637.1 KiB | 0.773 × 0.431 × 0.422 | Loose clay thread material, workshop and exploded craft components. |
-| sewing-needle.glb | 41.9 KiB | 0.702 × 1.031 × 0.021 | Needle and eye for hand manipulation and close textile stitching. |
+| sewing-needle.glb | 41.9 KiB | 0.702 × 1.031 × 0.021 | Needle and eye for close textile stitching. |
 | dressmaking-scissors.glb | 74.5 KiB | 0.504 × 0.922 × 0.045 | Garment cutting tool in workshop and component spread. |
 | seam-ripper.glb | 20.6 KiB | 0.171 × 0.68 × 0.094 | Small sewing tool with open hook and capped fork. |
 | brass-thimble.glb | 122.2 KiB | 0.21 × 0.265 × 0.21 | Protective hand tool, brass material and close-up scale cue. |

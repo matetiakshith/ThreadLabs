@@ -12,7 +12,7 @@ function Credit({photo}) {
 }
 
 const textScenes = [
- ['object',2,2.5,5.7,6.3], ['hands',6.2,6.8,14.8,15.6],
+ ['object',2,2.5,5.7,6.2],
  ['wrapper',16,16.8,19.6,20.4], ['gallery',20,21,34.3,35.4],
  ['workbench',36,36.8,41,42], ['construction',42,42.7,45.2,45.8],
  ['wordmark',45.5,46,47.7,48.4], ['return',48.4,49,51.8,52.5],
@@ -47,9 +47,6 @@ export default function CinematicExperience({children,onEnterApp,onCollection}) 
         .add(el,{opacity:[1,0],y:[0,-16],duration:(d-c)*1000},c*1000);
       return {el,start:a,end:d};
     });
-    const perimeter=node.querySelector('.cinematic-perimeter rect');
-    animation.add(perimeter,{strokeDashoffset:[1,0],duration:2400},8400)
-      .add(perimeter,{opacity:[1,0],duration:800},14500);
     animation.add(node.querySelector('.cinematic-giant-type'),{x:['85vw','-110vw'],duration:4800},16000)
       .add(node.querySelector('.cinematic-wordmark span'),{scale:[4,.15],rotate:[-10,10],duration:2900},45500)
       .add(node.querySelector('.cinematic-heritage h2'),{x:['65vw','-25vw'],duration:3500},57500)
@@ -57,15 +54,15 @@ export default function CinematicExperience({children,onEnterApp,onCollection}) 
       .add(node.querySelector('.cinematic-closing-ring'),{rotate:[-50,90],scale:[.65,1],duration:1200},70800);
     controller=createScrollController({shell:node,render:(progress,dt)=>{
       const state=evaluateTimeline(progress);
-      animation.seek(state.time*1000);
-      opening.inert=state.time>1.8; opening.style.visibility=state.time>2.2?'hidden':'visible';
-      for(const {el,start,end} of layers){const visible=state.time>=start&&state.time<end;el.inert=!visible;el.style.visibility=visible?'visible':'hidden';}
-      scene.render(state.time,dt);
-      const light=state.time>57.9&&state.time<63.7;
+      animation.seek(state.referenceTime*1000);
+      opening.inert=state.referenceTime>1.8; opening.style.visibility=state.referenceTime>2.2?'hidden':'visible';
+      for(const {el,start,end} of layers){const visible=state.referenceTime>=start&&state.referenceTime<end;el.inert=!visible;el.style.visibility=visible?'visible':'hidden';}
+      scene.render(state.referenceTime,dt);
+      const light=state.referenceTime>57.9&&state.referenceTime<63.7;
       node.dataset.tone=light?'paper':'ink';
       node.querySelector('.cinematic-chapter').textContent=`${String(state.chapterIndex+1).padStart(2,'0')} / ${state.chapter.replaceAll('-',' ')}`;
       node.style.setProperty('--journey',progress);
-      window.__threadlabsCinematic={progress,seconds:state.time,...scene.diagnostics()};
+      window.__threadlabsCinematic={progress,seconds:state.time,referenceSeconds:state.referenceTime,...scene.diagnostics()};
     }});
     await scene.load();
     if(!alive)return;
@@ -84,10 +81,9 @@ export default function CinematicExperience({children,onEnterApp,onCollection}) 
   <div className="cinematic-stage">
    <div className="cinematic-opening">{children}</div>
    {!fallback&&<>
-    <canvas ref={canvas} className="cinematic-canvas" aria-label="Three dimensional embroidery hoop held, turned and released by an articulated artisan hand" role="img"/>
+    <canvas ref={canvas} className="cinematic-canvas" aria-label="Three dimensional embroidery hoop, artisan workbench and textile material study" role="img"/>
     <div className="cinematic-vignette" aria-hidden="true"/>
     <section data-scene="object" className="cinematic-layer cinematic-object-copy"><div><span>01 / FROM AN IDEA</span><h2>A living<br/><em>atelier.</em></h2></div><p>Something imagined.<br/>Something made.<br/><small>AI brings the idea into focus.<br/>Human hands bring it to life.</small></p></section>
-    <section data-scene="hands" className="cinematic-layer cinematic-hands-copy"><h2>The work of <em>human hands.</em></h2><p>From imagination<br/>to heirloom.</p><svg className="cinematic-perimeter" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true"><rect x="2" y="2" width="996" height="696" rx="18" pathLength="1"/></svg><span>CRAFTED TOGETHER / THREADLABS</span></section>
     <section data-scene="wrapper" className="cinematic-layer cinematic-wrapper-copy"><p className="cinematic-giant-type">worn by you.</p><span>A pattern becomes a possibility.</span></section>
     <section data-scene="gallery" className="cinematic-layer cinematic-gallery-copy"><span>02 / EXTRAORDINARY HANDS</span><h2>Rooted in craft.</h2><p className="cinematic-gallery-label">Eight studies in Indian craftsmanship</p><span className="cinematic-gallery-cue">SCROLL TO DISCOVER →</span></section>
     <section data-scene="workbench" className="cinematic-layer cinematic-scene-copy"><div><span>03 / THE ATELIER</span><p>Generations of extraordinary craft.</p></div><h2>Tradition.<br/>Craft. Tomorrow.</h2><span className="cinematic-corner-note">WOOD × BRASS × LINEN × THREAD</span></section>
@@ -109,6 +105,6 @@ export default function CinematicExperience({children,onEnterApp,onCollection}) 
  {fallback&&<section className="cinematic-fallback"><span>THE WORK OF HUMAN HANDS.</span><h2>From imagination to heirloom.</h2><p>A living atelier connecting creative ideas with extraordinary Indian craftsmanship.</p><div>{photographs.slice(0,3).map(photo=><figure key={photo.src}><img src={`/images/${photo.src}`} alt={photo.label} loading="lazy"/><figcaption>{photo.label}<br/><Credit photo={photo}/></figcaption></figure>)}</div><button className="primary-button" onClick={onEnterApp}>Enter the Atelier <ArrowUpRight size={16}/></button></section>}
  <section className="cinematic-details" aria-label="The ThreadLabs atelier">{[['Customer','Your imagination.',['AI fashion design','Voice, sketch and reference inputs','Design visualization board','Measurements and commissions']],['Artisan','Extraordinary hands.',['Craft profiles and portfolios','Tailor and weaver discovery','Commission requests','Order progress updates']],['ThreadLabs','Made together.',['A shared creative studio','Indian artisan map','Beatle AI assistance','Ideas made physical']]].map(([label,title,details])=><article key={label}><span>{label}</span><h2>{title}</h2>{details.map((detail,i)=><p key={detail}><small>0{i+1}</small>{detail}</p>)}</article>)}</section>
  <footer className="cinematic-end-footer"><div><strong>THREADLABS</strong><span>by The Beatles</span></div><button onClick={onCollection}>Explore the collection <ArrowUpRight size={14}/></button><button onClick={onEnterApp}>Studio <ArrowUpRight size={14}/></button><span>©2026</span></footer>
- <details className="cinematic-credits"><summary>Craft photography & asset credits</summary><p>The 3D hand, craft models, textures and studio environment are original ThreadLabs assets.</p>{photographs.map(photo=><p key={photo.src}>{photo.label} — <Credit photo={photo}/></p>)}</details>
+ <details className="cinematic-credits"><summary>Craft photography & asset credits</summary><p>The craft models, textures and studio environment are original ThreadLabs assets.</p>{photographs.map(photo=><p key={photo.src}>{photo.label} — <Credit photo={photo}/></p>)}</details>
  </>;
 }

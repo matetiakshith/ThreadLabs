@@ -12,7 +12,7 @@
         1.732,
         0.094
       ],
-      "purpose": "Primary round craft object, hand grab, rotation, deconstruction and macro embroidery reveal.",
+      "purpose": "Primary round craft object, rotation, deconstruction and macro embroidery reveal.",
       "source": "Original procedural ThreadLabs geometry",
       "license": "Project-owned original; CC0-1.0 for reusable geometry",
       "meshes": [
@@ -92,7 +92,7 @@
         1.031,
         0.021
       ],
-      "purpose": "Needle and eye for hand manipulation and close textile stitching.",
+      "purpose": "Needle and eye for close textile stitching.",
       "source": "Original procedural ThreadLabs geometry",
       "license": "Project-owned original; CC0-1.0 for reusable geometry",
       "meshes": [

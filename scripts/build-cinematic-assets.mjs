@@ -81,7 +81,7 @@ async function save(id, g, purpose) {
     line(g, `embroidered-leaf-${i}`, [[0,y,.022],[side*.21,y+.14,.023],[side*.15,y+.02,.023],[0,y,.022]], .012, 'sage', 20);
   }
   cylinder(g, 'flower-center', .044, .044, .024, 'gold', [.1, .28, .034], [Math.PI/2,0,0], 16);
-  await save('embroidery-hoop', g, 'Primary round craft object, hand grab, rotation, deconstruction and macro embroidery reveal.');
+  await save('embroidery-hoop', g, 'Primary round craft object, rotation, deconstruction and macro embroidery reveal.');
 }
 {
   const g = group('thread-spool');
@@ -98,7 +98,7 @@ async function save(id, g, purpose) {
   cylinder(g,'needle-point',.006,0,.12,'steel',[0,-.495,0],undefined,8);
   const eye=ring(g,'needle-eye',.026,.006,'steel',[0,.315,0]); eye.scale.x=.38; eye.scale.y=1.6;
   line(g,'needle-thread',[[-.3,.1,.008],[-.1,.2,.008],[0,.34,.008],[.1,.47,0],[.4,.37,0]],.003,'gold');
-  await save('sewing-needle',g,'Needle and eye for hand manipulation and close textile stitching.');
+  await save('sewing-needle',g,'Needle and eye for close textile stitching.');
 }
 {
   const g=group('dressmaking-scissors');

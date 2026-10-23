@@ -45,6 +45,8 @@ async function diagnostic(page) {
     documentWidth: document.documentElement.scrollWidth,
     canvasReady: document.querySelector('.cinematic-scroll-shell canvas')?.dataset.ready,
     canvasCount: document.querySelectorAll('.cinematic-scroll-shell canvas').length,
+    handChapterPresent: Boolean(document.querySelector('.cinematic-scroll-shell [data-scene="hands"]')),
+    chapter: document.querySelector('.cinematic-chapter')?.textContent,
     fallback: [...document.querySelectorAll('.cinematic-fallback')].some(e => getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0),
     bodyText: document.body.innerText.slice(0, 300),
   }));
@@ -113,16 +115,16 @@ async function activeScrollSample(page) {
         samples.push({ intervalMs: t - last, progress: d.progress, renderCpuMs: d.frameMs, drawCalls: d.drawCalls, triangles: d.triangles });
       }
       last = t;
-      // Two natural native-scroll passes through approach, hold, and release.
+      // Two native-scroll passes through the object turn, wrapper, and gallery.
       const phase = i < 180 ? i / 179 : 1 - (i - 180) / 179;
-      scrollTo({ top: top + range * (.08 + .16 * phase), behavior: 'instant' });
+      scrollTo({ top: top + range * (.02 + .18 * phase), behavior: 'instant' });
       if (++i <= 360) requestAnimationFrame(frame);
       else {
         const summarize = key => {
           const values = samples.map(s => s[key]).filter(Number.isFinite).sort((a,b) => a-b);
           return { median: values[Math.floor(values.length*.5)], p95: values[Math.floor(values.length*.95)], max: values.at(-1) };
         };
-        resolve({ direction: 'forward .08→.24 over180RAF; reverse .24→.08 over180RAF', count: samples.length, rAF: summarize('intervalMs'), renderCpu: summarize('renderCpuMs'), drawCalls: summarize('drawCalls'), triangles: summarize('triangles'), samples });
+        resolve({ direction: 'forward .02→.20 over180RAF; reverse .20→.02 over180RAF', count: samples.length, rAF: summarize('intervalMs'), renderCpu: summarize('renderCpuMs'), drawCalls: summarize('drawCalls'), triangles: summarize('triangles'), samples });
       }
     }
     requestAnimationFrame(frame);
@@ -133,7 +135,7 @@ async function captureActiveCases() {
     const context = await browser.newContext({ viewport, deviceScaleFactor:1, reducedMotion:'no-preference' });
     const page = await context.newPage(); watch(page,name); await ready(page);
     const c = report.cases[name] = { viewport, captures:[], activePerformance:null };
-    await scrollToProgress(page,.08);
+    await scrollToProgress(page,.02);
     c.activePerformance = await activeScrollSample(page);
     console.log(name,JSON.stringify({...c.activePerformance,samples:undefined}));
     for (const p of [.11,.35,.55,.75]) {
@@ -142,6 +144,7 @@ async function captureActiveCases() {
       c.captures.push({filename,...state});
     }
     assert(c.captures.every(s=>s.settled),`${name}: comparison captures settle`);
+    assert(c.captures.every(s=>!s.handChapterPresent && !/\/\s*HAND\b/i.test(s.chapter||'')),`${name}: removed hand chapter stays absent`);
     await context.close();
   }
 }
@@ -150,12 +153,6 @@ async function captureCase(name, viewport, positions, reversePositions) {
   const page = await context.newPage(); watch(page, name);
   const record = report.cases[name] = { viewport, captures: [], reverse: [], performance: null };
   await ready(page);
-  if (name === 'desktop') {
-    record.earlyHand = await scrollToProgress(page, .14);
-    const earlyPath = resolve(output, 'desktop-hand-early.png');
-    await page.screenshot({ path: earlyPath, animations: 'disabled' });
-    console.log(`EARLY_HAND_CAPTURE ${earlyPath} ${JSON.stringify(record.earlyHand)}`);
-  }
   const files = new Map();
   for (const p of positions) {
     const state = await scrollToProgress(page, p), filename = captureName(name, p);
@@ -171,10 +168,10 @@ async function captureCase(name, viewport, positions, reversePositions) {
     record.reverse.push({ filename, ...state, pixelDifference });
   }
   assert(record.captures.every(c => c.settled), `${name}: deterministic progress settles`, record.captures.filter(c => !c.settled).map(c => [c.requestedProgress, c.progress]));
+  assert(record.captures.every(c => c.assetsLoaded === 26), `${name}: all 26 visual assets loaded`, record.captures.map(c => c.assetsLoaded));
   assert(record.captures.every(c => c.documentWidth <= viewport.width + 1), `${name}: no horizontal overflow`);
+  assert(record.captures.every(c => !c.handChapterPresent && !/\/\s*HAND\b/i.test(c.chapter || '')), `${name}: removed hand chapter stays absent`);
   assert(record.reverse.every(c => c.pixelDifference.comparable && c.pixelDifference.meanAbsoluteChannelDifference < 3), `${name}: reverse image repeatability`, record.reverse.map(c => ({ progress: c.requestedProgress, ...c.pixelDifference })));
-  const contacts = record.captures.filter(c => c.requestedProgress >= .13 && c.requestedProgress <= .2).map(c => c.handContactDistance).filter(Number.isFinite);
-  record.handContactDistances = contacts;
   // Resize while in the sequence and verify the normalized state survives.
   await scrollToProgress(page, .5);
   await page.setViewportSize({ width: viewport.width - 30, height: viewport.height - 40 });
@@ -191,6 +188,7 @@ async function captureCase(name, viewport, positions, reversePositions) {
   });
   await page.waitForTimeout(400);
   record.contextLoss.after = await diagnostic(page);
+  if (record.contextLoss.supported) assert(record.contextLoss.after.fallback && record.contextLoss.after.canvasCount === 0, `${name}: context loss activates static fallback`);
   await page.screenshot({ path: resolve(output, `${name}-context-loss.png`) });
   await context.close();
 }
@@ -199,13 +197,12 @@ try {
   if (activeOnly) {
     await captureActiveCases();
   } else {
-  // 31 evenly spaced states + all requested hand beats, with 5 repeatability anchors.
+  // 31 evenly spaced states across the shortened story, with 5 reverse anchors.
   const uniform = Array.from({ length: 31 }, (_, i) => Number((i / 30).toFixed(6)));
-  const hand = [.09, .11, .13, .16, .2, .23];
   const anchors = [.1, .2, .5, .8, .9];
-  const desktop = [...new Set([...uniform, ...hand, ...anchors])].sort((a,b) => a-b);
+  const desktop = [...new Set([...uniform, ...anchors])].sort((a,b) => a-b);
   await captureCase('desktop', { width: 1440, height: 900 }, desktop, [...anchors].reverse());
-  const mobile = [0,.09,.13,.16,.2,.23,.35,.5,.65,.8,.9,1];
+  const mobile = [0,.05,.1,.15,.2,.25,.35,.5,.65,.8,.9,1];
   await captureCase('mobile', { width: 390, height: 844 }, mobile, [.9,.8,.5,.2]);
   const reducedContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const reduced = await reducedContext.newPage(); watch(reduced, 'reduced-motion');
@@ -215,11 +212,15 @@ try {
   report.cases.reducedMotion.linkCount = await reduced.locator('a,button').count();
   await reduced.screenshot({ path: resolve(output, 'reduced-motion.png') });
   assert(report.cases.reducedMotion.linkCount > 0, 'Reduced motion: navigation remains available');
+  assert(report.cases.reducedMotion.fallback && report.cases.reducedMotion.canvasCount === 0, 'Reduced motion: static experience without WebGL canvas');
   await reducedContext.close();
   }
   assert(!report.assetResponses.some(r => r.status >= 400), 'Cinematic assets return successfully', report.assetResponses.filter(r => r.status >= 400));
   // Context loss produces a normal Three.js warning; preserve all logs for review.
-  assert(!report.errors.some(e => !/context lost|ERR_ABORTED/i.test(e.message)), 'No unexpected page or console errors', report.errors);
+  const isExpectedUnauthenticated = e => e.location?.url?.endsWith('/api/auth/me') && report.httpErrors.some(r => r.url === e.location.url && r.status === 401);
+  report.expectedUnauthenticatedErrors = report.errors.filter(isExpectedUnauthenticated);
+  const unexpectedErrors = report.errors.filter(e => !/context lost|ERR_ABORTED/i.test(e.message) && !isExpectedUnauthenticated(e));
+  assert(!unexpectedErrors.length, 'No unexpected page or console errors', unexpectedErrors);
 } catch (e) {
   report.fatal = { message: e.message, stack: e.stack };
   console.error(e);

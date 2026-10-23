@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DURATION, chapters, cameraKeyframes, clamp, smoothstep, range, envelope, evaluateTimeline, evaluateCamera } from './timeline.js';
+import { DURATION, chapters, cameraKeyframes, clamp, smoothstep, range, envelope, toReferenceTime, evaluateTimeline, evaluateCamera } from './timeline.js';
 
-test('the reference clock covers all 18 chapters exactly once', () => {
-  assert.equal(DURATION, 72);
-  assert.equal(chapters.length, 18);
+test('the edited clock covers all 17 remaining chapters exactly once', () => {
+  assert.equal(DURATION, 62.7);
+  assert.equal(chapters.length, 17);
+  assert.ok(!chapters.some((chapter) => chapter.id === 'hand'));
   assert.equal(chapters[0].start, 0);
   assert.equal(chapters.at(-1).end, DURATION);
   chapters.forEach((chapter, index) => {
@@ -15,6 +16,25 @@ test('the reference clock covers all 18 chapters exactly once', () => {
   });
   assert.equal(evaluateTimeline(1).chapter, 'closing');
   assert.equal(evaluateTimeline(1).chapterProgress, 1);
+});
+
+test('removed interval consumes no master time and the reference still ends at 72', () => {
+  assert.equal(toReferenceTime(-1), 0);
+  assert.equal(toReferenceTime(0), 0);
+  assert.equal(toReferenceTime(6.199), 6.199);
+  assert.equal(toReferenceTime(6.2), 15.5);
+  assert.equal(toReferenceTime(10.2), 19.5);
+  assert.equal(toReferenceTime(DURATION), 72);
+  assert.equal(toReferenceTime(99), 72);
+  assert.equal(evaluateTimeline(1).referenceTime, 72);
+  const wrapper = chapters.find((chapter) => chapter.id === 'wrapper');
+  assert.equal(wrapper.start, 6.2);
+  assert.equal(evaluateTimeline(wrapper.start / DURATION).chapter, 'wrapper');
+  assert.equal(evaluateTimeline(wrapper.start / DURATION).referenceTime, 15.5);
+  for (let i = 0; i <= 6270; i++) {
+    const reference = toReferenceTime(i / 100);
+    assert.ok(reference < 6.2 || reference >= 15.5);
+  }
 });
 
 test('ranges and envelopes clamp overscroll without offscreen scene leakage', () => {

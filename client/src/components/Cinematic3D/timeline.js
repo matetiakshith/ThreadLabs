@@ -1,8 +1,13 @@
 /**
  * ThreadLabs' single scroll clock. All scene values are sampled from absolute
  * reference seconds; no animation state or elapsed-frame accumulation is used.
+ * The omitted 6.2–15.5 reference interval occupies no scroll distance.
  */
-export const DURATION = 72;
+export const DURATION = 62.7;
+const REFERENCE_DURATION = 72;
+const CUT_START = 6.2;
+const CUT_END = 15.5;
+const CUT_DURATION = 9.3;
 
 export const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
 export const smoothstep = (value) => { const t = clamp(value); return t * t * (3 - 2 * t); };
@@ -18,10 +23,15 @@ export function envelope(time, inStart, inEnd, outStart, outEnd) {
   return smoothstep(range(time, inStart, inEnd)) * (1 - smoothstep(range(time, outStart, outEnd)));
 }
 
+/** Map the edited master clock onto the original authored scene timestamps. */
+export function toReferenceTime(masterTime) {
+  const time = clamp(masterTime, 0, DURATION);
+  return time < CUT_START ? time : time + CUT_DURATION;
+}
+
 const chapterStarts = [
   ['intro', 0, 'A living atelier'],
   ['object', 2, 'The object'],
-  ['hand', 6.2, 'The maker’s hand'],
   ['wrapper', 15.5, 'Unwrapping an idea'],
   ['gallery', 19.5, 'A collection of possibilities'],
   ['workbench', 35, 'At the workbench'],
@@ -37,7 +47,7 @@ const chapterStarts = [
   ['selector', 67.8, 'Choose a direction'],
   ['details', 69.2, 'The details'],
   ['closing', 71.5, 'Make it yours'],
-];
+].map(([id, start, label]) => [id, start >= CUT_END ? Number((start - CUT_DURATION).toFixed(6)) : start, label]);
 
 export const chapters = Object.freeze(chapterStarts.map(([id, start, label], index) => Object.freeze({
   id, start, end: chapterStarts[index + 1]?.[1] ?? DURATION, label,
@@ -46,10 +56,11 @@ export const chapters = Object.freeze(chapterStarts.map(([id, start, label], ind
 export function evaluateTimeline(progress) {
   const time = clamp(progress) * DURATION;
   let chapterIndex = 0;
-  for (let i = 1; i < chapters.length && time >= chapters[i].start; i++) chapterIndex = i;
+  for (let i = 1; i < chapters.length && time + 1e-10 >= chapters[i].start; i++) chapterIndex = i;
   const chapter = chapters[chapterIndex];
   return {
     time,
+    referenceTime: toReferenceTime(time),
     chapter: chapter.id,
     chapterIndex,
     chapterProgress: range(time, chapter.start, chapter.end),
@@ -58,7 +69,8 @@ export function evaluateTimeline(progress) {
 
 // Original camera staging, matched to the reference's scene order. Coordinates
 // face an XY-plane object at the origin, with +Z toward the viewer. Hold keys
-// intentionally reserve scroll time for the hand/object choreography.
+// preserve the authored reference curve; the removed interval is skipped by
+// toReferenceTime rather than adding another clock or animation owner.
 export const cameraKeyframes = Object.freeze([
   { time: 0, position: [0, -.15, 7.2], target: [0, 0, 0], fov: 34 },
   { time: 2, position: [0, 0, 5.5], target: [0, 0, 0], fov: 34 },
@@ -76,11 +88,11 @@ export const cameraKeyframes = Object.freeze([
   { time: 54, position: [0, 0, .48], target: [0, 0, 0], fov: 40 },
   { time: 56, position: [0, 0, .48], target: [0, 0, 0], fov: 40 },
   { time: 58, position: [0, 0, 5.5], target: [0, 0, 0], fov: 34 },
-  { time: DURATION, position: [0, 0, 5.5], target: [0, 0, 0], fov: 34 },
+  { time: REFERENCE_DURATION, position: [0, 0, 5.5], target: [0, 0, 0], fov: 34 },
 ].map((frame) => Object.freeze({ ...frame, position: Object.freeze(frame.position), target: Object.freeze(frame.target) })));
 
 export function evaluateCamera(referenceTime) {
-  const time = clamp(referenceTime, 0, DURATION);
+  const time = clamp(referenceTime, 0, REFERENCE_DURATION);
   let index = 0;
   while (index < cameraKeyframes.length - 2 && time > cameraKeyframes[index + 1].time) index++;
   const from = cameraKeyframes[index], to = cameraKeyframes[index + 1];
