@@ -7,6 +7,8 @@ import Wordmark from './ui/Wordmark';
 import { signIn, registerAccount, forgotPassword, resetPassword } from '../services/api';
 
 export default function LoginPage({ onLogin, onBack }) {
+  const [roleLanguage,setRoleLanguage] = useState(() => { try { return ['en','hi','te','ta','bn'].includes(localStorage.getItem('threadlabsRoleLanguage')) ? localStorage.getItem('threadlabsRoleLanguage') : 'en'; } catch { return 'en'; } });
+  const roleLabels = {en:{customer:'Customer',artisan:'Artisan'},hi:{customer:'ग्राहक',artisan:'कारीगर'},te:{customer:'వినియోగదారు',artisan:'హస్తకళాకారుడు'},ta:{customer:'வாடிக்கையாளர்',artisan:'கைவினைஞர்'},bn:{customer:'গ্রাহক',artisan:'কারিগর'}};
   const [role, setRole] = useState(()=>new URLSearchParams(location.search).has('reset')?'customer':null);
   const [method, setMethod] = useState('email');
   const [identity, setIdentity] = useState('');
@@ -44,13 +46,13 @@ export default function LoginPage({ onLogin, onBack }) {
       <span className="eyebrow login-art-footer">The ThreadLabs atelier — Est. 2026</span>
     </aside>
     <div className="login-panel">
-      <div className="login-preferences"><button onClick={role ? ()=>setRole(null) : onBack} className="text-button login-back"><ArrowLeft size={16}/>{role ? 'Change workspace' : 'Back to the atelier'}</button><ThemeToggle/></div>
+      <div className="login-preferences"><button onClick={role ? ()=>setRole(null) : onBack} className="text-button login-back"><ArrowLeft size={16}/>{role ? 'Change workspace' : 'Back to the atelier'}</button><select className="role-language" aria-label="Role label language" value={roleLanguage} onChange={e=>{setRoleLanguage(e.target.value);try{localStorage.setItem('threadlabsRoleLanguage',e.target.value)}catch{ /* Storage is optional. */ }}}><option value="en">English</option><option value="hi">हिन्दी</option><option value="te">తెలుగు</option><option value="ta">தமிழ்</option><option value="bn">বাংলা</option></select><ThemeToggle/></div>
       <div className="login-form-wrap">
         <span className="eyebrow">{role ? `${role} workspace` : 'A place for your imagination'}</span>
         <h1>{role ? <>Welcome <em>back.</em></> : <>Make it <em>yours.</em></>}</h1>
         <p className="muted">{role ? `Sign in to your ${role} workspace.` : 'Choose your side of the creative process.'}</p>
         {!role ? <div className="workspace-choices">
-          {[{id:'customer',title:'I have a vision',label:'Customer',desc:'Create a custom outfit. Find your artisan. Follow every stitch.',Icon:ShoppingBag},{id:'artisan',title:'I bring it to life',label:'Artisan',desc:'Meet your next commission and share the work of your hands.',Icon:Scissors}].map(({id,title,label,desc,Icon})=><button key={id} onClick={()=>setRole(id)} className="workspace-choice"><span className="workspace-choice-top"><span className="eyebrow">{label}</span><Icon size={19} strokeWidth={1.4}/></span><strong>{title}</strong><span className="workspace-choice-description">{desc}</span><ArrowUpRight className="workspace-choice-arrow" size={21}/></button>)}
+          {[{id:'customer',title:'I have a vision',desc:'Create a custom outfit. Find your artisan. Follow every stitch.',Icon:ShoppingBag},{id:'artisan',title:'I bring it to life',desc:'Meet your next commission and share the work of your hands.',Icon:Scissors}].map(({id,title,desc,Icon})=><button key={id} onClick={()=>setRole(id)} className="workspace-choice"><span className="workspace-choice-top"><span className="eyebrow" lang={roleLanguage}>{roleLabels[roleLanguage][id]}</span><Icon size={19} strokeWidth={1.4}/></span><strong>{title}</strong><span className="workspace-choice-description">{desc}</span><ArrowUpRight className="workspace-choice-arrow" size={21}/></button>)}
         </div> : <form onSubmit={submit} className="login-form">
           {!resetToken&&<div><span className="field-label">Sign in with</span><div className="segmented-control">{['email','username'].map(value=><button key={value} type="button" aria-pressed={method===value} onClick={()=>setMethod(value)}>{value==='email'?'Email':'Username'}</button>)}</div></div>}
           {!resetToken&&<label className="field-label">{method==='email'?'Email address':'Username'}<input required type={method==='email'?'email':'text'} autoComplete="username" value={identity} onChange={e=>setIdentity(e.target.value)} placeholder={method==='email'?'you@example.com':'Your username'}/></label>}

@@ -250,7 +250,7 @@ export default function ArtisanMatchingMap({
 
           {/* RIGHT: Artisan Recommendation Cards (Rapido-Style) */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="mb-2 flex items-center justify-between"><p className="text-xs text-muted">{searchMode === 'nearby' ? 'Nearby workshops' : `Artisans in ${chosenState}`} · ranked by rating volume</p><button onClick={()=>setSearchMode(null)} className="text-xs text-rose">Change search area</button></div>
+            <div className="mb-2 flex items-center justify-between"><p className="recommendations-heading">{searchMode === 'nearby' ? 'Nearby workshops' : `Artisans in ${chosenState}`} · ranked by rating volume</p><button onClick={()=>setSearchMode(null)} className="text-xs text-rose">Change search area</button></div>
             {visibleArtisans.map((artisan) => {
               const isSelected = selectedArtisan?.id === artisan.id;
               return (

@@ -36,7 +36,7 @@ export class Phase2Store {
   async saveMedia(user, id, key) { await this.pool.query('INSERT INTO threadlabs_media(id,account_id,object_key) VALUES($1,$2,$3)', [id,user.id,key]); }
   async portfolio(user) { return (await this.pool.query('SELECT id,media_id AS "mediaId",payload FROM threadlabs_portfolio WHERE account_id=$1 ORDER BY created_at DESC', [user.id])).rows.map(r=>({id:r.id,mediaId:r.mediaId,...r.payload})); }
   async addPortfolio(user, id, mediaId, payload) { await this.pool.query('INSERT INTO threadlabs_portfolio(id,account_id,media_id,payload) VALUES($1,$2,$3,$4)', [id,user.id,mediaId,payload]); }
-  async editPortfolio(user,id,payload) { return (await this.pool.query('UPDATE threadlabs_portfolio SET payload=$3 WHERE id=$1 AND account_id=$2 RETURNING id', [id,user.id,payload])).rowCount; }
+  async editPortfolio(user,id,payload,mediaId=null) { return (await this.pool.query('UPDATE threadlabs_portfolio SET payload=$3,media_id=COALESCE($4,media_id) WHERE id=$1 AND account_id=$2 RETURNING id', [id,user.id,payload,mediaId])).rowCount; }
   async deletePortfolio(user,id) { return (await this.pool.query('DELETE FROM threadlabs_portfolio WHERE id=$1 AND account_id=$2 RETURNING id', [id,user.id])).rowCount; }
   async designs(user) { return (await this.pool.query('SELECT id,prompt,created_at FROM threadlabs_designs WHERE account_id=$1 ORDER BY created_at DESC LIMIT 100', [user.id])).rows; }
   async design(user,id) {

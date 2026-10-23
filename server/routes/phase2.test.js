@@ -74,6 +74,23 @@ test('Phase 2 PostgreSQL and HTTP integration, provider fixtures explicitly inje
    assert.equal((await call(`/media/${piece.body.mediaId}`,{cookie:artisan.cookie})).status,200);
    assert.equal((await call(`/profile/portfolio/${piece.body.id}`,{method:'PATCH',cookie:artisan.cookie,body:{title:'Updated title',description:'Updated',category:'Kurta'}})).status,200);
    const freshStore=new Phase2Store(accountsStore);assert.equal((await freshStore.portfolio(artisan.body.user))[0].title,'Updated title');
+   const originalMedia=piece.body.mediaId;
+   const secondPiece=await call('/profile/portfolio',{method:'POST',cookie:artisan.cookie,body:{title:'Second photograph',imageDataUrl:png}});assert.equal(secondPiece.status,201);
+   const replacement={title:'Updated title',description:'Updated',category:'Kurta',imageDataUrl:png};
+   assert.equal((await call(`/profile/portfolio/${piece.body.id}`,{method:'PATCH',cookie:other.cookie,body:replacement})).status,403);
+   assert.equal((await call(`/profile/portfolio/${piece.body.id}`,{method:'PATCH',cookie:artisan.cookie,body:{...replacement,imageDataUrl:'data:image/png;base64,invalid'}})).status,400);
+   assert.equal((await freshStore.portfolio(artisan.body.user)).find(p=>p.id===piece.body.id).mediaId,originalMedia);
+   const changed=await call(`/profile/portfolio/${piece.body.id}`,{method:'PATCH',cookie:artisan.cookie,body:replacement});
+   assert.equal(changed.status,200);assert.notEqual(changed.body.mediaId,originalMedia);
+   assert.equal((await freshStore.portfolio(artisan.body.user)).find(p=>p.id===piece.body.id).mediaId,changed.body.mediaId);
+   assert.equal((await call(`/media/${changed.body.mediaId}`,{cookie:artisan.cookie})).status,200);
+   assert.equal((await call(`/media/${changed.body.mediaId}`,{cookie:other.cookie})).status,404);
+   const secondSaved=(await freshStore.portfolio(artisan.body.user)).find(p=>p.id===secondPiece.body.id);assert.equal(secondSaved.mediaId,secondPiece.body.mediaId);
+   assert.equal((await call(`/profile/portfolio/${secondPiece.body.id}`,{method:'DELETE',cookie:artisan.cookie})).status,200);
+   const intruder=await call('/auth/register',{method:'POST',body:{identity:'other-maker@example.com',password,role:'artisan',profile:{studioName:'Other Studio',fullName:'Other Maker'}}});
+   assert.equal((await call(`/profile/portfolio/${piece.body.id}`,{method:'PATCH',cookie:intruder.cookie,body:replacement})).status,404);
+   assert.equal((await call(`/profile/portfolio/${piece.body.id}`,{method:'PATCH',cookie:artisan.cookie,body:{...replacement,imageDataUrl:undefined}})).status,200);
+   assert.equal((await freshStore.portfolio(artisan.body.user)).find(p=>p.id===piece.body.id).mediaId,changed.body.mediaId);
  });
  await t.test('new published artisans receive commissions with server-owned details and no fake prices',async()=>{
    commission=await call('/commissions',{method:'POST',cookie:customer.cookie,body:{artisanId:artisan.body.user.artisanId,garments:[{name:'Linen kurta'}],deliveryMode:'pickup',measurements:null,userPrompt:'Ivory linen kurta',baseCost:100,artisanName:'spoofed'}});

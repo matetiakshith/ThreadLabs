@@ -42,7 +42,9 @@ export function profileRoutes({store,storage,requireUser,env=process.env}) {
   }));
   router.patch('/portfolio/:id',asyncRoute(async(req,res)=>{
     const payload=details(req.body); if(!uuid(req.params.id)||!payload) return res.status(400).json({error:'Invalid portfolio details.'});
-    if(!await store.editPortfolio(req.user,req.params.id,payload)) return res.status(404).json({error:'Portfolio piece not found.'}); res.json({id:req.params.id,...payload});
+    if(!(await store.portfolio(req.user)).some(piece=>piece.id===req.params.id)) return res.status(404).json({error:'Portfolio piece not found.'});
+    const mediaId=req.body.imageDataUrl===undefined?null:await storage.put(req.user,req.body.imageDataUrl,store);
+    if(!await store.editPortfolio(req.user,req.params.id,payload,mediaId)) return res.status(404).json({error:'Portfolio piece not found.'}); res.json({id:req.params.id,...payload,...(mediaId?{mediaId}:{})});
   }));
   router.delete('/portfolio/:id',asyncRoute(async(req,res)=>{
     if(!uuid(req.params.id)||!await store.deletePortfolio(req.user,req.params.id)) return res.status(404).json({error:'Portfolio piece not found.'}); res.json({success:true});

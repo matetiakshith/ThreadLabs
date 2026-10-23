@@ -11,10 +11,10 @@ export default function ArtisanProfileEditor({draftBio}) {
   const act=async(fn,message)=>{setPending(true);setError('');setStatus('');try{await fn();setStatus(message)}catch(e){setError(e.message)}finally{setPending(false)}};
   const publish=()=>{if(!profile.published&&!window.confirm('Publish your studio name, city, state, biography and craft details in the artisan directory? Contact details and portfolio photographs stay private.'))return;act(async()=>{const saved=await saveProfile({...profile,published:!profile.published});setProfile(saved.profile)},profile.published?'Studio removed from public directory.':'Studio published. You can now receive commissions.');};
   const add=()=>act(async()=>{
-    if(editing){await editPortfolio(editing,piece);setPortfolio(v=>v.map(p=>p.id===editing?{...p,...piece}:p))}
+    if(editing){const saved=await editPortfolio(editing,{...piece,...(image?{imageDataUrl:image.dataUrl}:{})});setPortfolio(v=>v.map(p=>p.id===editing?{...p,...saved}:p))}
     else{if(!image)throw new Error('Choose a photograph for this piece.');const saved=await addPortfolio({...piece,imageDataUrl:image.dataUrl});setPortfolio(v=>[saved,...v]);}
     setPiece({title:'',description:'',category:''});setImage(null);setEditing(null);
-  },editing?'Portfolio details saved.':'Portfolio piece saved.');
+  },editing?'Portfolio piece saved.':'Portfolio piece saved.');
   if(!loaded)return <div role="status" className="artisan-profile-editor">{error?<><p>{error}</p><button className="text-button" onClick={()=>{setError('');setReload(v=>v+1)}}>Retry loading profile</button></>:<p>Loading your saved profile…</p>}</div>;
   return <div className="artisan-profile-editor">
     <form onSubmit={e=>{e.preventDefault();act(async()=>{const data=await saveProfile(profile);setProfile(data.profile)},'Profile saved to your account.')}}>
@@ -27,13 +27,13 @@ export default function ArtisanProfileEditor({draftBio}) {
     </form>
     <section><h2>Your portfolio</h2><p>Upload photographs of your completed work. Images use persistent private storage.</p>
       <form onSubmit={e=>{e.preventDefault();add()}} className="portfolio-form">
-        <label className="field-label">Project title<input required maxLength={160} value={piece.title} onChange={e=>setPiece(v=>({...v,title:e.target.value}))}/></label>
+        <label className="field-label">Project title<input disabled={pending} required maxLength={160} value={piece.title} onChange={e=>setPiece(v=>({...v,title:e.target.value}))}/></label>
         <label className="field-label">Category<input maxLength={100} value={piece.category} onChange={e=>setPiece(v=>({...v,category:e.target.value}))}/></label>
         <label className="field-label">Description<textarea maxLength={2000} value={piece.description} onChange={e=>setPiece(v=>({...v,description:e.target.value}))}/></label>
-        {!editing&&<label className="field-label">Completed garment photograph<input type="file" accept="image/png,image/jpeg,image/webp" disabled={pending} onChange={e=>{const file=e.target.files?.[0];if(file)act(async()=>setImage(await prepareReferenceFile(file)),'Photograph ready. Save the piece to upload it.')}}/></label>}
-        {image&&<img className="portfolio-preview" src={image.dataUrl} alt="Photograph ready to upload"/>}<button disabled={pending} className="primary-button">{editing?'Save piece details':'Add portfolio piece'}</button>{editing&&<button type="button" className="text-button" onClick={()=>{setEditing(null);setPiece({title:'',description:'',category:''})}}>Cancel edit</button>}
+        <label className="field-label">{editing?'Replace photograph (optional)':'Completed garment photograph'}<input key={editing||'new'} type="file" accept="image/png,image/jpeg,image/webp" disabled={pending} onChange={e=>{const file=e.target.files?.[0];if(file)act(async()=>setImage(await prepareReferenceFile(file)),'Photograph ready. Save the piece to upload it.')}}/></label>
+        {(image||editing)&&<img className="portfolio-preview" src={image?.dataUrl||mediaURL(portfolio.find(p=>p.id===editing)?.mediaId)} alt={image?"Photograph ready to upload":"Current portfolio photograph"}/>}<button disabled={pending} className="primary-button">{editing?'Save portfolio piece':'Add portfolio piece'}</button>{editing&&<button disabled={pending} type="button" className="text-button" onClick={()=>{setImage(null);setEditing(null);setPiece({title:'',description:'',category:''})}}>Cancel edit</button>}
       </form>
-      <div className="portfolio-saved">{portfolio.map(item=><article key={item.id}><img src={mediaURL(item.mediaId)} alt={item.title}/><div><h3>{item.title}</h3><small>{item.category}</small><p>{item.description}</p><button disabled={pending} className="text-button" onClick={()=>{setEditing(item.id);setPiece({title:item.title,description:item.description,category:item.category});setImage(null)}}>Edit details</button><button disabled={pending} className="text-button" onClick={()=>act(async()=>{await removePortfolio(item.id);setPortfolio(v=>v.filter(p=>p.id!==item.id))},'Piece removed from your portfolio.')}>Remove piece</button></div></article>)}</div>
+      <div className="portfolio-saved">{portfolio.map(item=><article key={item.id}><img src={mediaURL(item.mediaId)} alt={item.title}/><div><h3>{item.title}</h3><small>{item.category}</small><p>{item.description}</p><button disabled={pending} className="text-button" onClick={()=>{document.querySelector('.portfolio-form')?.scrollIntoView({block:'center'});setEditing(item.id);setPiece({title:item.title,description:item.description,category:item.category});setImage(null)}}>Change photograph / details</button><button disabled={pending} className="text-button" onClick={()=>act(async()=>{await removePortfolio(item.id);setPortfolio(v=>v.filter(p=>p.id!==item.id))},'Piece removed from your portfolio.')}>Remove piece</button></div></article>)}</div>
     </section>{error&&<p role="alert" className="generation-error">{error}</p>}{status&&<p role="status">{status}</p>}
   </div>;
 }
