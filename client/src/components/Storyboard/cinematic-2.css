@@ -1,0 +1,26 @@
+.textile-world-layer > svg { position: absolute; width: 0; height: 0; }
+.textile-world-embroidery { bottom: 20%; left: -4%; width: min(420px,72vw); mask-image: radial-gradient(ellipse,#000 15%,transparent 72%); }
+.story .story-artisans { min-height: 760px; }
+.story .story-artisans figure { left: auto; right: 6%; top: 29%; bottom: auto; width: min(554px,44vw); height: auto; margin: 0; }
+.story .story-artisans figure > .cinematic-weaving { width: 100%; height: auto; max-width: 554px; object-fit: contain; object-position: center; mask-image: none; display: block; }
+.story .story-craft-details { position: relative; bottom: auto; left: auto; margin-top: 15px; justify-content: flex-end; gap: 18px; }
+.story .story-craft-details img { width: min(170px,19vw); height: auto; aspect-ratio: 2.35; mask-image: radial-gradient(ellipse,#000 45%,transparent 100%); }
+.story .cinematic-photo-mannequin { width: min(420px,34vw); height: auto; aspect-ratio: 2.36; right: 4%; bottom: 8%; mask-image: radial-gradient(ellipse at 65% 65%,#000 37%,transparent 80%); }
+.cinematic-photo-mannequin > img { display: block; width: 100%; height: auto; filter: var(--story-photo); }
+.cinematic-photo-mannequin .luxury-cta-contact { display: none; }
+@media(max-width:900px) {
+ .story .story-artisans { height: auto; min-height: 90svh; padding-bottom: 50px; overflow: hidden; }
+ .story .story-artisans .story-section-copy { padding-top: 15vh; }
+ .story .story-artisans figure { position: relative; top: auto; right: auto; width: min(554px,86%); margin: 32px auto 0; }
+ .story .story-craft-details img { width: min(170px,33vw); }
+ .story .cinematic-photo-mannequin { width: min(400px,70vw); right: -4%; bottom: 5%; }
+}
+@media(max-width:600px) {
+ .story .cinematic-photo-mannequin { width: min(360px,86vw); right: -8%; bottom: 6%; }
+ .textile-world-embroidery { left: -15%; bottom: 25%; width: 78vw; }
+}
+.story .cinematic-photo-mannequin { width: min(552px,42vw); aspect-ratio: 2.36; bottom: 5%; mask-image: none; filter: drop-shadow(-9px 8px 12px #38251928); }
+.cinematic-photo-mannequin > img { mask-image: linear-gradient(#000 85%,transparent 100%); }
+.story .story-artisans figure > .cinematic-weaving { mask-image: linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent); }
+@media(max-width:900px) { .story .cinematic-photo-mannequin { width: min(500px,84vw); right: -10%; bottom: 5%; } }
+@media(max-width:600px) { .story .cinematic-photo-mannequin { width: min(450px,99vw); right: -12%; bottom: 5%; } }

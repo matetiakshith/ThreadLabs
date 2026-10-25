@@ -2,15 +2,35 @@
  * ThreadLabs API Client
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = import.meta.env?.VITE_API_BASE || '/api';
 
+export class WorkspaceRequestError extends Error {
+  constructor(message, status = 0, code = 'API_ERROR') {
+    super(message); this.name = 'WorkspaceRequestError'; this.status = status; this.code = code;
+  }
+}
 async function accountRequest(endpoint, { method = 'GET', body, signal } = {}) {
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    method, credentials: 'include', signal,
-    ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || 'The workspace request failed.');
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, {
+      method, credentials: 'include', signal,
+      ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    throw new WorkspaceRequestError('Cannot reach the ThreadLabs API. Check the backend connection and try again.', 0, 'NETWORK_ERROR');
+  }
+  const result = await response.json().catch(() => null);
+  if (!response.ok) {
+    const fallback = [502, 503, 504].includes(response.status)
+      ? `The ThreadLabs API is unavailable (HTTP ${response.status}). Check the backend connection and try again.`
+      : `The workspace request failed (HTTP ${response.status}).`;
+    throw new WorkspaceRequestError(typeof result?.error === 'string' ? result.error : fallback,
+      response.status, typeof result?.code === 'string' ? result.code : 'HTTP_ERROR');
+  }
+  if (result === null || typeof result !== 'object') {
+    throw new WorkspaceRequestError('The workspace API returned an invalid response. Check the API endpoint configuration.', response.status, 'INVALID_RESPONSE');
+  }
   return result;
 }
 export const signIn = body => accountRequest('/auth/login', { method: 'POST', body });

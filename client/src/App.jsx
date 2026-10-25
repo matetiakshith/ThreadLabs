@@ -32,6 +32,7 @@ function Application() {
   const [draftBio,setDraftBio]=useState(null);
   const [selectedCommission,setSelectedCommission]=useState(null);
   const motionRoot = useRef(null);
+  const sessionRequest = useRef(null);
   const [measurementDraft, setMeasurementDraft] = useState(() => { try { return loadMeasurementDraft(sessionStorage); } catch { return createMeasurementDraft(); } });
   const [draftStorageWarning, setDraftStorageWarning] = useState(false);
   useEffect(() => {
@@ -67,7 +68,10 @@ function Application() {
   useEffect(() => {
     if (demo) return;
     let cancelled = false;
-    fetchSession().then(({user}) => { if (!cancelled) setUserRole(user); }).catch(() => {});
+    const pending = sessionRequest.current || (sessionRequest.current = fetchSession());
+    pending.then(({user}) => { if (!cancelled) setUserRole(user); }).catch(error => {
+      if (!cancelled && error.status !== 401) setNotification({msg:error.message});
+    });
     return () => { cancelled = true; };
   }, [demo]);
   useEffect(() => {
@@ -77,7 +81,13 @@ function Application() {
       if (controller.signal.aborted) return;
       setRequests(items);
       setActiveOrder(current => items.find(item => item.orderId === current?.orderId) || items[0] || null);
-    }).catch(error => { if (!controller.signal.aborted) setNotification({msg:error.message}); });
+    }).catch(error => {
+      if (controller.signal.aborted) return;
+      if (error.status === 401) {
+        sessionRequest.current=null;setUserRole(null);setRequests([]);setActiveOrder(null);setSelectedCommission(null);setActiveTab('login');
+      }
+      setNotification({msg:error.message});
+    });
     refresh();
     const timer = setInterval(refresh, 30000);
     return () => { controller.abort(); clearInterval(timer); };
@@ -86,7 +96,7 @@ function Application() {
   const switchWorkspace = async () => {
     if (!demo) {
       try { await signOut(); } catch (error) { showToast(error.message); return; }
-      setUserRole(null); setRequests([]); setActiveOrder(null); setMeasurementDraft(createMeasurementDraft());
+      sessionRequest.current=null;setUserRole(null); setRequests([]); setActiveOrder(null); setMeasurementDraft(createMeasurementDraft());
       setCustomerRequirement(null);setCurrentPrompt('');setAssistantPrompt(null);setDraftBio(null);setAssistantAction(null);setSelectedCommission(null);
     }
     setActiveTab('login');
@@ -95,6 +105,19 @@ function Application() {
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500);
+  };
+
+  const enterWorkspace = async () => {
+    if (demo) { setActiveTab('login'); return; }
+    if (userRole?.id) { setActiveTab(userRole.role === 'artisan' ? 'artisan' : 'needs'); return; }
+    setNotification({msg:'Opening your workspace…'});
+    try {
+      const {user} = await (sessionRequest.current || (sessionRequest.current = fetchSession()));
+      setUserRole(user);setNotification(null);setActiveTab(user.role === 'artisan' ? 'artisan' : 'needs');
+    } catch (error) {
+      sessionRequest.current=null;
+      setNotification(error.status === 401 ? null : {msg:error.message});setActiveTab('login');
+    }
   };
 
   const handleToggleSound = () => {
@@ -188,7 +211,7 @@ function Application() {
         
         {/* TAB 1: 3D SHOPPING MALL (IMPRESSIVE OPENING RUNWAY TOUR) */}
         {activeTab === 'mall' && (
-          <ThreadLabsLanding onEnterApp={() => setActiveTab(!demo && userRole?.id ? (userRole.role === 'artisan' ? 'artisan' : 'needs') : 'login')} isMuted={isMuted} onToggleSound={handleToggleSound} />
+          <ThreadLabsLanding onEnterApp={enterWorkspace} isMuted={isMuted} onToggleSound={handleToggleSound} />
         )}
 
         {activeTab === 'login' && <LoginPage onBack={()=>setActiveTab('mall')} onLogin={(role, identity, artisanId, account)=>{setUserRole(account || {role,identity,artisanId}); if (!demo) { setRequests([]); setActiveOrder(null); setCustomerRequirement(null);setCurrentPrompt('');setAssistantPrompt(null);setDraftBio(null);setAssistantAction(null);setSelectedCommission(null); setMeasurementDraft(createMeasurementDraft()); } setActiveTab(role==='customer'?'needs':'artisan')}} />}

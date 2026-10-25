@@ -1,0 +1,78 @@
+/* Content defines the editorial rhythm; only the opening textile scene is pinned. */
+.story .story-artisans,.story .story-network { height:auto; min-height:0; scroll-margin-top:82px; isolation:isolate; }
+.story .story-artisans { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.25fr); gap:5%; align-items:center; padding:60px max(6%,calc((100% - 1360px)/2)) 48px; overflow:hidden; }
+.story .story-artisans::before,.story .story-network::before { content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 73% 48%,#b7773d16,transparent 66%),repeating-linear-gradient(90deg,#a77d4a02 0 1px,transparent 1px 4px),repeating-linear-gradient(0deg,#a77d4a02 0 1px,transparent 1px 4px); }
+.story .story-artisans .story-section-copy,.story .story-network .story-section-copy { position:relative;top:auto;width:auto;padding:0; }
+.story .story-artisans h2 { font-size:clamp(40px,4vw,62px); }
+.craft-signature { display:block;margin-top:35px;padding-top:14px;border-top:1px solid var(--story-line);color:var(--story-muted);font-family:Georgia,serif;font-style:italic;font-size:15px; }
+.craft-editorial { position:relative;height:610px;width:100%;max-width:700px;justify-self:center; }
+.craft-connection { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
+.craft-connection path,.network-routes path { fill:none;stroke:var(--story-accent);stroke-width:1;stroke-dasharray:1;opacity:.55; }
+.story .story-artisans .craft-portrait { position:absolute;left:auto;right:auto;top:auto;bottom:auto;width:auto;height:auto;margin:0; }
+.story .story-artisans .craft-weaver { left:0;top:155px;width:min(554px,90%);z-index:2; }
+.story .story-artisans .craft-embroiderer { top:0;right:0;width:39%;max-width:240px; }
+.story .story-artisans .craft-tailor { bottom:0;right:0;width:36%;max-width:220px; }
+.story .story-artisans .craft-artisan { bottom:18px;left:9%;width:35%;max-width:218px; }
+.craft-image-mask { overflow:hidden;clip-path:polygon(0 7%,25% 0%,60% 3%,100% 0%,100% 100%,0 100%); }
+.story .story-artisans .craft-portrait img { display:block;width:100%;height:auto;object-fit:contain;mask-image:none;filter:var(--story-photo);transition:transform .7s ease,filter .7s ease; }
+.story .story-artisans .craft-portrait figcaption { position:static;background:none;padding:10px 0 0;text-align:left;color:var(--story-muted);font-size:11px;line-height:1.5; }
+.craft-portrait figcaption strong { display:block;font-family:Georgia,serif;font-weight:400;color:var(--story-ink);font-size:17px; }
+.craft-portrait figcaption span { display:block;font-size:10px;transition:opacity .3s,transform .3s; }
+@media(hover:hover) { .craft-portrait figcaption span { opacity:.68;transform:translateY(2px); }.craft-portrait:hover img,.craft-portrait:focus img { transform:scale(1.035);filter:brightness(1.04); }.craft-portrait:hover figcaption span,.craft-portrait:focus figcaption span { opacity:1;transform:none; } }
+.story .story-network { padding:32px max(6%,calc((100% - 1360px)/2)) 0; }
+.network-composition { display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.25fr);gap:5%;align-items:center; }
+.network-map-stage { position:relative;width:100%;height:clamp(450px,65svh,640px); }
+.story .story-india { display:block;width:100%;height:100%;padding:0;margin:0;filter:drop-shadow(0 12px 15px #76513318); }
+.network-state { cursor:pointer;outline:none; }
+.network-state > path:first-child { transition:filter .25s,stroke-width .25s; }
+.network-state:hover > path:first-child,.network-state:focus > path:first-child,.network-state.is-active > path:first-child { filter:brightness(1.25);stroke:var(--story-ink);stroke-width:2.5; }
+.network-weave { pointer-events:none;mix-blend-mode:multiply; }
+.network-region { border-top:1px solid var(--story-line);margin-top:28px;padding-top:18px;max-width:340px;min-height:132px; }
+.network-region strong { display:block;letter-spacing:.12em;text-transform:uppercase;font-size:11px;color:var(--story-accent); }
+.story .network-region p { font-size:12px;margin:10px 0; }
+.story .story-network .story-map-link { margin:0;padding:8px 0;font-size:12px;line-height:1.6;text-align:left; }
+.network-routes { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
+.network-routes path { stroke-width:1.1;opacity:.7; }
+.network-route-note { position:absolute;bottom:5px;right:0;font-size:8px;letter-spacing:.06em;color:var(--story-muted); }
+.story #network-discovery .india-artisan-map { width:100%;margin:24px 0 32px; }
+/* The landscape is already visible at the first CTA pixel; the textile edge opens on scroll. */
+.story .luxury-cta { min-height:660px;scroll-margin-top:0; }
+.cta-connecting-thread { position:absolute;inset:0;width:100%;height:55%;pointer-events:none;z-index:1; }
+.cta-connecting-thread path { fill:none;stroke:var(--story-accent);stroke-width:1.1;stroke-dasharray:1; }
+.cta-fabric-sweep { position:absolute;inset:0;width:100%;height:62%;pointer-events:none;z-index:1; }
+.cta-fabric-sweep path { stroke:#be8356;stroke-width:.6; }
+.story .luxury-cta-copy { padding-top:clamp(115px,16vh,180px); }
+@media(min-width:1600px) { .craft-editorial { height:610px; }.story .story-artisans .craft-weaver { top:155px; } }
+@media(max-width:899px) {
+ .story .story-artisans { grid-template-columns:1fr;padding:42px 7% 28px;gap:24px; }
+ .story .story-artisans .story-section-copy { padding:0;max-width:540px; }
+ .craft-signature { margin-top:20px; }
+ .craft-editorial { height:610px;max-width:600px; }
+ .network-composition { grid-template-columns:1fr;gap:20px; }
+ .story .story-network { padding:50px 7% 0; }
+ .story .story-network h2 { font-size:42px; }
+ .network-region { margin-top:16px;min-height:0;padding-top:12px;max-width:none; }
+ .network-map-stage { height:460px;max-width:560px;justify-self:center; }
+}
+@media(max-width:600px) {
+ .story .story-artisans,.story .story-network { scroll-margin-top:105px; }
+ .story .story-artisans { padding-top:42px; }
+ .story .story-artisans h2 { font-size:38px; }
+ .craft-editorial { height:460px; }
+ .story .story-artisans .craft-weaver { top:130px;width:100%; }
+ .story .story-artisans .craft-embroiderer { width:45%; }
+ .story .story-artisans .craft-artisan { left:0;bottom:15px;width:46%; }
+ .story .story-artisans .craft-tailor { right:0;bottom:0;width:46%; }
+ .craft-portrait figcaption strong { font-size:15px; }
+ .craft-portrait figcaption span { font-size:9px;line-height:1.4; }
+ .story .story-network { padding-top:28px; }
+ .network-map-stage { height:405px; }
+ .story .luxury-cta { min-height:720px; }
+ .story .luxury-cta-copy { padding-top:125px; }
+}
+@media(prefers-reduced-motion:reduce) { .craft-image-mask { clip-path:none; }.craft-portrait img { transform:none!important; }.craft-connection path,.network-routes path { stroke-dashoffset:0!important; } }
+
+.story .story-header { background:linear-gradient(var(--story-paper) 40%,color-mix(in srgb,var(--story-paper) 94%,transparent) 80%,transparent); }
+
+[data-theme=dark] .cta-fabric-sweep { filter:brightness(.43) saturate(.8); }
+.story .story-header { background:var(--story-paper); }

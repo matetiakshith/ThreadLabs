@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node --test src/components/Measurements/*.test.js src/components/Motion/*.test.js src/components/Needs/*.test.js src/components/Artisans/*.test.js src/components/Cinematic3D/*.test.js"
+    "test": "node --test src/components/Measurements/*.test.js src/components/Motion/*.test.js src/components/Needs/*.test.js src/components/Artisans/*.test.js src/components/Cinematic3D/*.test.js src/components/Storyboard/*.test.js devApiProxy.test.js src/services/api.test.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -19,6 +19,7 @@
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "framer-motion": "^14.0.0",
+    "gsap": "^3.15.0",
     "lucide-react": "^1.52.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

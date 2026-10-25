@@ -1,0 +1,471 @@
+{
+  "version": 2,
+  "units": "scene units; hoop band center radius .8",
+  "coordinates": "Y up, hoop face +Z",
+  "models": [
+    {
+      "id": "atelier-hoop",
+      "url": "/cinematic/atelier-hoop.glb",
+      "bytes": 3134248,
+      "triangles": 118736,
+      "drawCalls": 34,
+      "dimensions": [
+        1.765,
+        1.739,
+        0.11
+      ],
+      "purpose": "Hero wood hoop with eight raised red loop petals, sage satin leaves, cream linen, removable backing, and working brass tension hardware.",
+      "source": "Original ThreadLabs atelier geometry",
+      "license": "CC0-1.0",
+      "parts": [
+        {
+          "name": "atelier-outer-rim",
+          "material": "atelier-oak",
+          "role": "outer-rim"
+        },
+        {
+          "name": "atelier-inner-rim",
+          "material": "atelier-oak-edge",
+          "role": "inner-rim"
+        },
+        {
+          "name": "atelier-rim-woven-highlights",
+          "material": "atelier-oak-edge",
+          "role": "outer-rim"
+        },
+        {
+          "name": "atelier-rim-woven-recesses",
+          "material": "atelier-oak-recess",
+          "role": "outer-rim"
+        },
+        {
+          "name": "atelier-linen-face",
+          "material": "atelier-linen",
+          "role": "linen"
+        },
+        {
+          "name": "atelier-linen-thickness",
+          "material": "atelier-backing",
+          "role": "linen"
+        },
+        {
+          "name": "atelier-fabric-backing",
+          "material": "atelier-backing",
+          "role": "backing"
+        },
+        {
+          "name": "atelier-backing-fibers",
+          "material": "atelier-linen",
+          "role": "backing"
+        },
+        {
+          "name": "atelier-clamp-cheeks",
+          "material": "atelier-brass",
+          "role": "clamp"
+        },
+        {
+          "name": "atelier-clamp-bolt",
+          "material": "atelier-steel",
+          "role": "fastener"
+        },
+        {
+          "name": "atelier-bolt-thread",
+          "material": "atelier-brass",
+          "role": "fastener"
+        },
+        {
+          "name": "atelier-knurled-tightening-nut",
+          "material": "atelier-brass",
+          "role": "fastener"
+        },
+        {
+          "name": "atelier-embroidered-stem",
+          "material": "atelier-floss-sage",
+          "role": "stitch-stem"
+        },
+        {
+          "name": "atelier-satin-stitch-leaves",
+          "material": "atelier-floss-sage",
+          "role": "stitch-leaves"
+        },
+        {
+          "name": "atelier-leaf-veins-and-highlights",
+          "material": "atelier-floss-sage-light",
+          "role": "stitch-leaves"
+        },
+        {
+          "name": "atelier-petal-0-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 0
+        },
+        {
+          "name": "atelier-petal-0-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 0
+        },
+        {
+          "name": "atelier-petal-1-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 1
+        },
+        {
+          "name": "atelier-petal-1-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 1
+        },
+        {
+          "name": "atelier-petal-2-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 2
+        },
+        {
+          "name": "atelier-petal-2-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 2
+        },
+        {
+          "name": "atelier-petal-3-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 3
+        },
+        {
+          "name": "atelier-petal-3-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 3
+        },
+        {
+          "name": "atelier-petal-4-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 4
+        },
+        {
+          "name": "atelier-petal-4-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 4
+        },
+        {
+          "name": "atelier-petal-5-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 5
+        },
+        {
+          "name": "atelier-petal-5-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 5
+        },
+        {
+          "name": "atelier-petal-6-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 6
+        },
+        {
+          "name": "atelier-petal-6-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 6
+        },
+        {
+          "name": "atelier-petal-7-floss",
+          "material": "atelier-floss-red",
+          "role": "stitch-petals",
+          "petal": 7
+        },
+        {
+          "name": "atelier-petal-7-fiber",
+          "material": "atelier-floss-red-light",
+          "role": "stitch-petals",
+          "petal": 7
+        },
+        {
+          "name": "atelier-flower-center-french-knots",
+          "material": "atelier-floss-red-deep",
+          "role": "stitch-center"
+        },
+        {
+          "name": "atelier-flower-center-fiber",
+          "material": "atelier-floss-red",
+          "role": "stitch-center"
+        },
+        {
+          "name": "atelier-loose-thread-end",
+          "material": "atelier-floss-red",
+          "role": "thread-end"
+        }
+      ]
+    },
+    {
+      "id": "atelier-dress-form",
+      "url": "/cinematic/atelier-dress-form.glb",
+      "bytes": 124760,
+      "triangles": 4400,
+      "drawCalls": 4,
+      "dimensions": [
+        0.685,
+        2.028,
+        0.46
+      ],
+      "purpose": "Tailor’s linen dress form with a shaped torso, stitched construction lines and weighted metal stand.",
+      "source": "Original ThreadLabs atelier geometry",
+      "license": "CC0-1.0",
+      "parts": [
+        {
+          "name": "atelier-dress-form-body",
+          "material": "atelier-linen",
+          "role": "torso"
+        },
+        {
+          "name": "atelier-dress-form-seams",
+          "material": "atelier-backing",
+          "role": "seams"
+        },
+        {
+          "name": "atelier-dress-form-cap",
+          "material": "atelier-brass",
+          "role": "hardware"
+        },
+        {
+          "name": "atelier-dress-form-stand",
+          "material": "atelier-ink",
+          "role": "stand"
+        }
+      ]
+    },
+    {
+      "id": "atelier-shelf",
+      "url": "/cinematic/atelier-shelf.glb",
+      "bytes": 58700,
+      "triangles": 1980,
+      "drawCalls": 2,
+      "dimensions": [
+        1.65,
+        1.18,
+        0.28
+      ],
+      "purpose": "Three shelves on slim brackets for studio fabric bolts, thread and pattern storage.",
+      "source": "Original ThreadLabs atelier geometry",
+      "license": "CC0-1.0",
+      "parts": [
+        {
+          "name": "atelier-shelf-boards",
+          "material": "atelier-oak",
+          "role": "wood"
+        },
+        {
+          "name": "atelier-shelf-brackets",
+          "material": "atelier-ink",
+          "role": "brackets"
+        }
+      ]
+    },
+    {
+      "id": "atelier-measuring-tape",
+      "url": "/cinematic/atelier-measuring-tape.glb",
+      "bytes": 38580,
+      "triangles": 806,
+      "drawCalls": 2,
+      "dimensions": [
+        1.318,
+        0.047,
+        0.433
+      ],
+      "purpose": "Curved cloth measuring tape with eighty engraved measurement ticks.",
+      "source": "Original ThreadLabs atelier geometry",
+      "license": "CC0-1.0",
+      "parts": [
+        {
+          "name": "atelier-tape-cloth",
+          "material": "atelier-paper",
+          "role": "tape"
+        },
+        {
+          "name": "atelier-tape-measure-marks",
+          "material": "atelier-ink",
+          "role": "marks"
+        }
+      ]
+    },
+    {
+      "id": "atelier-botanical",
+      "url": "/cinematic/atelier-botanical.glb",
+      "bytes": 169924,
+      "triangles": 5570,
+      "drawCalls": 4,
+      "dimensions": [
+        0.673,
+        0.605,
+        0.156
+      ],
+      "purpose": "A restrained spray of five cream daisies with curved petals, leaves and branching stems.",
+      "source": "Original ThreadLabs atelier geometry",
+      "license": "CC0-1.0",
+      "parts": [
+        {
+          "name": "atelier-botanical-stems",
+          "material": "atelier-floss-sage",
+          "role": "stems"
+        },
+        {
+          "name": "atelier-botanical-leaves",
+          "material": "atelier-olive",
+          "role": "leaves"
+        },
+        {
+          "name": "atelier-daisy-petals",
+          "material": "atelier-flower-cream",
+          "role": "flowers"
+        },
+        {
+          "name": "atelier-daisy-centers",
+          "material": "atelier-flower-center",
+          "role": "centers"
+        }
+      ]
+    },
+    {
+      "id": "atelier-ribbon",
+      "url": "/cinematic/atelier-ribbon.glb",
+      "bytes": 157000,
+      "triangles": 6144,
+      "drawCalls": 2,
+      "dimensions": [
+        0.797,
+        2.702,
+        0.488
+      ],
+      "purpose": "Long curling olive linen ribbon with gently cupped fabric and separately modelled selvedge edges.",
+      "source": "Original ThreadLabs atelier geometry",
+      "license": "CC0-1.0",
+      "parts": [
+        {
+          "name": "atelier-olive-linen-ribbon",
+          "material": "atelier-olive",
+          "role": "ribbon"
+        },
+        {
+          "name": "atelier-ribbon-selvedge",
+          "material": "atelier-floss-sage-light",
+          "role": "selvedge"
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "id": "atelier-linen-color",
+      "url": "/cinematic/atelier-linen-color.webp",
+      "bytes": 15972,
+      "resolution": [
+        512,
+        512
+      ],
+      "kind": "color",
+      "purpose": "Warm ivory linen warp and weft; assign to atelier-linen and atelier-backing, repeat 9–12 times.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-linen-normal",
+      "url": "/cinematic/atelier-linen-normal.png",
+      "bytes": 8306,
+      "resolution": [
+        512,
+        512
+      ],
+      "kind": "normal",
+      "purpose": "Crossed woven fibers in tangent space; normalScale .3–.5, repeat 9–12 times.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-linen-roughness",
+      "url": "/cinematic/atelier-linen-roughness.webp",
+      "bytes": 13858,
+      "resolution": [
+        256,
+        256
+      ],
+      "kind": "roughness",
+      "purpose": "Diffuse cotton-linen micro roughness.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-oak-color",
+      "url": "/cinematic/atelier-oak-color.webp",
+      "bytes": 7598,
+      "resolution": [
+        512,
+        512
+      ],
+      "kind": "color",
+      "purpose": "Honey oak with gently wandering continuous fine grain.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-oak-normal",
+      "url": "/cinematic/atelier-oak-normal.png",
+      "bytes": 41048,
+      "resolution": [
+        512,
+        512
+      ],
+      "kind": "normal",
+      "purpose": "Subtle open wood grain; assign to oak materials, normalScale .2–.3.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-floss-normal",
+      "url": "/cinematic/atelier-floss-normal.png",
+      "bytes": 4790,
+      "resolution": [
+        256,
+        256
+      ],
+      "kind": "normal",
+      "purpose": "Spiral fibers for embroidery floss; use a light normalScale .12–.2.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-paper-color",
+      "url": "/cinematic/atelier-paper-color.webp",
+      "bytes": 5692,
+      "resolution": [
+        512,
+        512
+      ],
+      "kind": "color",
+      "purpose": "Soft parchment pattern stock with restrained drafting grid.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "atelier-olive-color",
+      "url": "/cinematic/atelier-olive-color.webp",
+      "bytes": 11324,
+      "resolution": [
+        512,
+        512
+      ],
+      "kind": "color",
+      "purpose": "Olive textile dyed over visible linen weave.",
+      "source": "Original deterministic textile/material study by ThreadLabs",
+      "license": "CC0-1.0"
+    }
+  ]
+}
