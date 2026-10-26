@@ -9,7 +9,12 @@ export class PrivateStorage {
     if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash || !/^[a-z0-9-]+$/.test(this.env.OBJECT_STORAGE_BUCKET)) throw Object.assign(new Error('Private storage configuration is invalid.'),{status:503});
     return `${base.origin}/storage/v1/object/${this.env.OBJECT_STORAGE_BUCKET}/${key.split('/').map(encodeURIComponent).join('/')}`;
   }
-  headers() { return { Authorization:`Bearer ${this.env.OBJECT_STORAGE_KEY}`,apikey:this.env.OBJECT_STORAGE_KEY }; }
+  headers() {
+    const key = this.env.OBJECT_STORAGE_KEY;
+    // Modern Supabase secret keys are API keys, not JWT bearer tokens.
+    // Keep the legacy service_role JWT path compatible with existing deployments.
+    return { apikey: key, ...(key?.startsWith('sb_secret_') ? {} : { Authorization: `Bearer ${key}` }) };
+  }
   async ensurePrivateBucket() {
     if(this.privateUntil>Date.now())return;
     const objectURL=new URL(this.url('configuration-check'));
