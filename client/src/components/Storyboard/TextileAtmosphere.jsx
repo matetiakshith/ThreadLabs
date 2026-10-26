@@ -9,6 +9,10 @@ function FabricArtwork({className,name}){
 }
 export default function TextileAtmosphere(){
  return <div className="textile-world-atmosphere" aria-hidden="true">
+  <div className="heritage-atmosphere">
+   <div className="heritage-silk-texture"/>
+   <svg className="heritage-thread-drift" viewBox="0 0 1000 1000" preserveAspectRatio="none"><path d="M205 240 Q220 230 238 241 T270 237"/><path d="M746 347 Q763 325 787 330"/><path d="M615 165 Q635 180 652 164"/></svg>
+  </div>
   <div className="textile-world-valley"><img src="/assets/threadlabs-cinematic/textile-horizon-1672.webp" srcSet="/assets/threadlabs-cinematic/textile-horizon-1100.webp 1100w, /assets/threadlabs-cinematic/textile-horizon-1672.webp 1672w" sizes="(max-aspect-ratio: 1/1) 180vh, 100vw" alt="" width="1672" height="941" fetchPriority="high"/></div>
   <FabricArtwork className="textile-world-origin" name="01-textile-landscape"/>
   <FabricArtwork className="textile-world-ribbons" name="02-floating-silk"/>

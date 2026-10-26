@@ -109,10 +109,11 @@ export function createFabricScene(canvas, { final = false, mannequinOnly = false
   const intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) draw(); }); intersection.observe(canvas);
   function themeLighting(){
     const dark=document.documentElement.dataset.theme==='dark';
-    ambient.intensity=dark?.38:1.25;
-    key.intensity=dark?(mannequinOnly?2.3:3.15):(mannequinOnly?2.5:3.4);
-    key.color.set(dark?'#ffd8a6':'#fff5e0');rim.intensity=dark?2.4:1.8;fill.intensity=dark?.18:.45;
-    renderer.toneMappingExposure=dark?.92:(mannequinOnly?1.02:1.18);
+    ambient.intensity=dark?.64:1.25;
+    key.intensity=dark?(mannequinOnly?2.3:3.35):(mannequinOnly?2.5:3.4);
+    key.color.set(dark?'#f4dfbc':'#fff5e0');rim.intensity=dark?2.15:1.8;fill.intensity=dark?.4:.45;
+    rim.color.set(dark?'#e3b87d':'#f9e4c3');
+    renderer.toneMappingExposure=dark?1.02:(mannequinOnly?1.02:1.18);
     draw();
   }
   const themeObserver=new MutationObserver(themeLighting);themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});

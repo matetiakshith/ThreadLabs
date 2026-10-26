@@ -1,0 +1,98 @@
+/* Heritage palette: dark-only presentation. Light theme keeps its existing cascade. */
+:root[data-theme=dark] {
+ --heritage-espresso:#211813;
+ --heritage-walnut:#30221b;
+ --heritage-elevated:#392a23;
+ --heritage-olive:#292d22;
+ --heritage-copper:#c47a50;
+ --heritage-gold:#b99a68;
+ --heritage-ivory:#f1e6d6;
+ --heritage-champagne:#c1ae99;
+ --paper-rgb:33 24 19;--surface-rgb:48 34 27;--sand-rgb:57 42 35;
+ --ink-rgb:241 230 214;--muted-rgb:193 174 153;--line-rgb:100 76 58;
+ --terracotta:var(--heritage-copper);--rose:var(--heritage-copper);
+ --gold:var(--heritage-gold);--blush:var(--heritage-elevated);
+ --forest-rgb:185 154 104;
+}
+.heritage-atmosphere { display:none; }
+:root[data-theme=dark] .story {
+ --story-paper:var(--heritage-espresso);--story-surface:var(--heritage-walnut);
+ --story-ink:var(--heritage-ivory);--story-muted:var(--heritage-champagne);
+ --story-accent:var(--heritage-copper);--story-line:#644c3a;
+ --story-photo:brightness(.86) saturate(.88) sepia(.06);
+ background:var(--heritage-espresso);
+}
+:root[data-theme=dark] .story-hero {
+ background:radial-gradient(ellipse 65% 72% at 51% 38%,#82563524,transparent 78%),linear-gradient(180deg,#211813 8%,#2b1e17 78%,#30221b);
+}
+:root[data-theme=dark] .heritage-atmosphere { display:block;position:absolute;inset:0;pointer-events:none; }
+:root[data-theme=dark] .heritage-silk-texture { position:absolute;inset:0;background:url('/assets/threadlabs-heritage/espresso-silk.png') 50% 38%/cover no-repeat;opacity:.12;mix-blend-mode:screen;mask-image:radial-gradient(ellipse 78% 82% at 50% 45%,#000,transparent 95%); }
+:root[data-theme=dark] .heritage-thread-drift { position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--heritage-gold);stroke-width:.65; }
+:root[data-theme=dark] .heritage-thread-drift path { opacity:.23;animation:heritage-thread-drift 24s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center; }
+:root[data-theme=dark] .heritage-thread-drift path:nth-child(2) { animation-duration:31s;animation-delay:-12s;opacity:.16; }
+:root[data-theme=dark] .heritage-thread-drift path:nth-child(3) { animation-duration:28s;animation-delay:-19s;opacity:.18; }
+@keyframes heritage-thread-drift { from { transform:translate(-5px,5px) rotate(-3deg); } to { transform:translate(9px,-12px) rotate(4deg); } }
+:root[data-theme=dark] .textile-world-valley { mask-image:linear-gradient(transparent calc(var(--landscape-edge) - 10%),#000 calc(var(--landscape-edge) + 16%),#000 96%,transparent 100%); }
+:root[data-theme=dark] .textile-world-layer { opacity:.82; }
+:root[data-theme=dark] .story-wordmark::before { background:radial-gradient(ellipse,#211813c9 0%,#21181380 38%,#21181300 74%); }
+:root[data-theme=dark] .story .story-eyebrow { color:var(--heritage-copper); }
+:root[data-theme=dark] .story-thread path { stroke:var(--heritage-copper);opacity:.72; }
+/* The approach surfaces sit within the same pinned scene and share its scroll clock. */
+:root[data-theme=dark] .story-approach { isolation:isolate; }
+:root[data-theme=dark] .story-approach::before { content:'';position:absolute;inset:-22% -16% -12%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse,#30221bd9 25%,#30221b80 56%,transparent 78%); }
+:root[data-theme=dark] .story-features button { background:#30221bea;border-color:#72523e80;box-shadow:inset 0 1px #e1bb8510,0 8px 22px #120b0714; }
+:root[data-theme=dark] .story-features button:first-child { background:linear-gradient(140deg,#292d22e8,#30221bf0); }
+:root[data-theme=dark] .story-features button:hover { border-color:var(--heritage-gold);background-color:var(--heritage-elevated); }
+/* A continuous walnut/umber atmosphere, with texture local to the craft heading. */
+:root[data-theme=dark] .story-artisans { background:linear-gradient(#30221b,#2b2019 78%,#271e18); }
+:root[data-theme=dark] .story .story-artisans::before { background:radial-gradient(ellipse 52% 85% at 74% 48%,#b78b4b14,transparent 80%); }
+:root[data-theme=dark] .story-artisans .story-section-copy::before { content:'';position:absolute;inset:-65px -30px;z-index:-1;background:url('/cinematic/atelier-linen-color.webp') center/400px auto;opacity:.025;mask-image:radial-gradient(ellipse,#000 20%,transparent 72%);pointer-events:none; }
+:root[data-theme=dark] .story-artisans .craft-image-mask { box-shadow:0 16px 32px #130c0733; }
+:root[data-theme=dark] .story-artisans .craft-portrait img { filter:brightness(.9) saturate(.86) sepia(.08); }
+:root[data-theme=dark] .craft-portrait figcaption span { color:var(--heritage-champagne);opacity:.94; }
+:root[data-theme=dark] .craft-connection path { stroke:var(--heritage-copper);opacity:.64; }
+:root[data-theme=dark] .story-network { background:linear-gradient(#271e18,#25221a 60%,#291b18); }
+:root[data-theme=dark] .story .story-network::before { background:radial-gradient(ellipse 48% 75% at 73% 50%,#b99a680e,transparent 82%); }
+:root[data-theme=dark] .story .story-india { filter:brightness(.97) saturate(.8) drop-shadow(0 9px 14px #140d0730); }
+:root[data-theme=dark] .network-routes path { stroke:var(--heritage-gold);opacity:.56; }
+:root[data-theme=dark] .network-region strong { color:var(--heritage-gold); }
+:root[data-theme=dark] .story .luxury-cta { background:#291b18; }
+:root[data-theme=dark] .luxury-cta-image { filter:brightness(.84) saturate(.78) sepia(.08); }
+:root[data-theme=dark] .textile-cta-foreground { filter:brightness(.73) saturate(.85); }
+:root[data-theme=dark] .luxury-cta-art::after { background:radial-gradient(ellipse 68% 85% at 40% 23%,#291b18e8 0%,#291b18a8 43%,#21181312 90%),linear-gradient(180deg,#291b1880,transparent 70%,#21181366); }
+:root[data-theme=dark] .story .luxury-cta-copy > p { color:var(--heritage-ivory); }
+:root[data-theme=dark] .cta-fabric-sweep { filter:brightness(.57) saturate(.76); }
+/* Copper controls use espresso text to keep small labels readable. */
+:root[data-theme=dark] .story .story-button,
+:root[data-theme=dark] .primary-button:not(:disabled) { background:var(--heritage-copper);border-color:#d1986b;color:var(--heritage-espresso);box-shadow:inset 0 1px #f1e6d62e,0 5px 14px #140d071c; }
+:root[data-theme=dark] .story .story-button:hover,
+:root[data-theme=dark] .primary-button:not(:disabled):hover { background:#d08b61;color:var(--heritage-espresso); }
+:root[data-theme=dark] .story .story-header { background:linear-gradient(#211813 70%,#211813ee);border-bottom:1px solid #b99a6812; }
+:root[data-theme=dark] .story-header nav a:hover,
+:root[data-theme=dark] .story-header nav button:hover { color:var(--heritage-gold); }
+:root[data-theme=dark] .theme-toggle:hover { background:var(--heritage-elevated); }
+:root[data-theme=dark] .story-map-link:focus-visible,
+:root[data-theme=dark] .story button:focus-visible,
+:root[data-theme=dark] .story a:focus-visible { outline-color:var(--heritage-gold); }
+/* Existing workspace surfaces inherit the palette; each view keeps its content hierarchy. */
+:root[data-theme=dark] .studio-page { background:radial-gradient(ellipse 65% 62% at 68% 12%,#292d2266,transparent 82%),var(--heritage-espresso); }
+:root[data-theme=dark] .product-page:has(.maker-search),
+:root[data-theme=dark] .product-page:has(.artisan-row),
+:root[data-theme=dark] .request-desk { background:radial-gradient(ellipse 65% 70% at 75% 16%,#58412624,transparent 85%),var(--heritage-espresso); }
+:root[data-theme=dark] .app-card,
+:root[data-theme=dark] .design-sheet,
+:root[data-theme=dark] .workspace-choices > button { background:var(--heritage-walnut);border-color:var(--line);box-shadow:inset 0 1px #f1e6d608; }
+:root[data-theme=dark] .status-dot { background:var(--heritage-gold); }
+:root[data-theme=dark] .beatle-root { --beatle-shell:#e0cdb1;--beatle-outline:#c1ae99;--beatle-seam:#b99a68; }
+:root[data-theme=dark] .beatle-launcher { background:var(--heritage-walnut);border-color:#866044;box-shadow:inset 0 1px #e8c69b14,0 5px 18px #150d0826; }
+:root[data-theme=dark] .beatle-launcher:hover { background:var(--heritage-elevated);border-color:var(--heritage-gold); }
+:root[data-theme=dark] .beatle-panel { background:var(--heritage-walnut);border-color:var(--line);box-shadow:0 12px 34px #130b0738; }
+:root[data-theme=dark] .beatle-compose button:not(:disabled) { background:var(--heritage-copper);color:var(--heritage-espresso); }
+@media(hover:hover) { :root[data-theme=dark] .craft-portrait:hover img,:root[data-theme=dark] .craft-portrait:focus img { filter:brightness(.98) saturate(.9) sepia(.06); } }
+@media(max-width:600px) {
+ :root[data-theme=dark] .heritage-silk-texture { background-position:47% 36%;opacity:.1; }
+ :root[data-theme=dark] .luxury-cta-art::after { background:radial-gradient(ellipse 115% 84% at 50% 15%,#291b18ed 5%,#291b18bb 46%,#21181315 95%),linear-gradient(0deg,#21181366,transparent 40%); }
+}
+@media(prefers-reduced-motion:reduce) { :root[data-theme=dark] .heritage-thread-drift path { animation:none; } }
+:root[data-theme=dark] .cloth-study-viewport { background:radial-gradient(ellipse 75% 75% at 48% 30%,#3b342b,#292622); }
+:root[data-theme=dark] .cloth-controls button[aria-pressed=true] { color:var(--heritage-champagne);border-color:var(--heritage-gold); }
